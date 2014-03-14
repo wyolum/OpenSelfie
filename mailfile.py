@@ -8,11 +8,11 @@ from email.MIMEText import MIMEText
 from email.MIMEAudio import MIMEAudio
 from email.MIMEImage import MIMEImage
 from email.Encoders import encode_base64
+import config
+
 def sendMail(recipient,subject, text, *attachmentFilePaths):
-  gmailUser = 'XXXXXXXXXXX@gmail.com'
-  gmailPassword = 'YYYYYYYYYYYYYYYY'
   msg = MIMEMultipart()
-  msg['From'] = gmailUser
+  msg['From'] = config.gmailUser
   msg['To'] = recipient
   msg['Subject'] = subject
   msg.attach(MIMEText(text))
@@ -22,8 +22,8 @@ def sendMail(recipient,subject, text, *attachmentFilePaths):
   mailServer.ehlo()
   mailServer.starttls()
   mailServer.ehlo()
-  mailServer.login(gmailUser, gmailPassword)
-  mailServer.sendmail(gmailUser, recipient, msg.as_string())
+  mailServer.login(config.gmailUser, config.gmailPassword)
+  mailServer.sendmail(config.gmailUser, recipient, msg.as_string())
   mailServer.close()
   print('Sent email to %s' % recipient)
 def getAttachment(attachmentFilePath):

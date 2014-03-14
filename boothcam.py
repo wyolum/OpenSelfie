@@ -3,21 +3,20 @@ from time import sleep
 import gdata.photos.service
 from PIL import Image
 import serial
+import config
 
 logo = Image.open('logo.png')
 lxsize, lysize = logo.size
-#set these up in your google account
-username = 'XXXXXXX@gmail.com'
-password = 'YYYYYYYYYYYYY'
+
 def setup_google():
-    global client,username,password
+    global client
     # Create a client class which will make HTTP requests with Google Docs server.
     client = gdata.photos.service.PhotosService()
     # Authenticate using your Google Docs email address and password.
-    client.ClientLogin(username, password)
+    client.ClientLogin(config.username, config.password)
 
 def snap():
-    global logo, username,client
+    global logo ,client
     camera = picamera.PiCamera()
     camera.start_preview()
     sleep(5)
@@ -27,9 +26,6 @@ def snap():
     snap = Image.open('image.jpg')
     snap.paste(logo,(0,550),logo)
     snap.save('photo.jpg')
-    #upload to picasa album
-    album_url ='/data/feed/api/user/%s/albumid/%s' % (username, '5989223732309633793')
-    photo = client.InsertPhotoSimple(album_url,'NoVa Snap','Northern Virginia Mini-Maker Faire', 'photo.jpg',content_type='image/jpeg')
     return snap
 
 def findser():
@@ -37,3 +33,7 @@ def findser():
     print 'using AlaMode'
     return ser
 
+def googleUpload(filen):
+    #upload to picasa album
+    album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, '5989223732309633793')
+    photo = client.InsertPhotoSimple(album_url,'NoVa Snap','Northern Virginia Mini-Maker Faire', filen ,content_type='image/jpeg')
