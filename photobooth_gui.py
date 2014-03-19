@@ -25,7 +25,7 @@ def check_and_snap():
     global  wiftk, Button_enabled
 
     can.delete("text")
-    tid = can.create_text(WIDTH/2, HEIGHT - 110, text="Press button when ready", font=("times", 50), tags="text")
+    tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
     can.update()
     if (Button_enabled == False):
        ser.write('e') #enable button
@@ -47,21 +47,28 @@ def check_and_snap():
                             tags="image")
        can.delete("text")
 
-       tid = can.create_text(WIDTH/2, HEIGHT - 110, text="Uploading Image", font=("times", 50), tags="text")
+       tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
        can.update()
        googleUpload('photo.jpg')
     else:
-       print command
+        if command.strip():
+            print command
     root.after(100, check_and_snap)
 
 #if they enter an email address send photo. add error checking
-def sendPic():
+def sendPic(*args):
     global email_addr;
     print 'sending photo by email to %s' % email_addr.get()
-    sendMail(email_addr.get(),"Greetings from NoVa Maker Faire", "Here's your picture from the Wyolum Photobooth",'photo.jpg')
+    try:
+        sendMail(email_addr.get().strip(),"Greetings from NoVa Maker Faire", "Here's your picture from the Wyolum Photobooth",'photo.jpg')
+        etext.delete(0, END)
+        etext.focus_set()
+    except Exception, e:
+        print 'Send Failed'
+        raise
             
         
-
+FONT = ('Times', 24)
 ser = findser()
 #bound to text box for email
 email_addr = StringVar()
@@ -71,12 +78,15 @@ root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 #Button(frame, text="Exit", command=quit).pack(side=LEFT)
-Button(frame, text="SendEmail", command=sendPic).pack(side=RIGHT)
-etext = Entry(frame,textvariable=email_addr).pack(side=LEFT)
+Button(frame, text="SendEmail", command=sendPic, font=FONT).pack(side=RIGHT)
+etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
+etext.pack()
 frame.pack()
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
 setup_google()
 root.after(100, check_and_snap)
 root.wm_title("Wyolum Photobooth")
+etext.focus_set()
+# etext.bind("<Enter>", sendPic)
 root.mainloop()
