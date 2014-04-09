@@ -2,6 +2,7 @@ from boothcam import *
 from Tkinter import *
 import ImageTk
 from mailfile import *
+import custom
 
 WIDTH = 1280
 HEIGHT = 800
@@ -60,7 +61,7 @@ def sendPic(*args):
     global email_addr;
     print 'sending photo by email to %s' % email_addr.get()
     try:
-        sendMail(email_addr.get().strip(),"Greetings from NoVa Maker Faire", "Here's your picture from the Wyolum Photobooth",'photo.jpg')
+        sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg,'photo.jpg')
         etext.delete(0, END)
         etext.focus_set()
     except Exception, e:

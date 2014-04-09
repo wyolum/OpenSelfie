@@ -4,8 +4,9 @@ import gdata.photos.service
 from PIL import Image
 import serial
 import config
+import custom
 
-logo = Image.open('logo.png')
+logo = Image.open(custom.logopng)
 lxsize, lysize = logo.size
 
 def setup_google():
