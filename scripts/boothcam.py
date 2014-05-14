@@ -15,7 +15,6 @@ SCREEN_W = 1366
 SCREEN_H = 788 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-COUNTDOWN_LOCATION = (500, 635)
 N_COUNTDOWN = 5
 
 FONTSIZE=100
@@ -28,7 +27,7 @@ def setup_google():
     # Authenticate using your Google Docs email address and password.
     client.ClientLogin(config.username, config.password)
 
-def countdown(camera, can):
+def countdown(camera, can, n_count):
     camera.start_preview()
     can.delete("image")
     camera.led = False
@@ -39,12 +38,12 @@ def countdown(camera, can):
     led_state = False
     can.delete("all")
 
-    for i in range(N_COUNTDOWN):
+    for i in range(n_count):
         can.delete("text")
         can.update()
-        can.create_text(SCREEN_W/2 - 50, 300, text=str(N_COUNTDOWN - i), font=font, tags="text")
+        can.create_text(SCREEN_W/2 - 50, 300, text=str(n_count - i), font=font, tags="text")
         can.update()
-        if i < N_COUNTDOWN - 2:
+        if i < n_count - 2:
             time.sleep(1)
             led_state = not led_state
             camera.led = led_state
@@ -57,11 +56,11 @@ def countdown(camera, can):
     can.update()
     camera.stop_preview()
 
-def snap(can):
+def snap(can, n_count):
     global logo ,client
 
     camera = picamera.PiCamera()
-    countdown(camera, can)
+    countdown(camera, can, n_count)
     camera.capture('image.jpg')
     camera.close()
 

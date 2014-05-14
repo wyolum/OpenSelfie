@@ -8,6 +8,7 @@ import Image
 WIDTH = 1366
 HEIGHT = 788
 SCALE = 2
+N_COUNT = 5
 
 root = Tk()
 Button_enabled = False
@@ -22,6 +23,22 @@ def interrupted(signum, frame):
     "called when read times out"
     print 'interrupted!'
     signal.signal(signal.SIGALRM, interrupted)
+
+def display_image(im=None):
+    global wiftk
+    
+    x,y = im.size
+    x/= SCALE
+    y/= SCALE
+    
+    im = im.resize((x,y));
+    wiftk = ImageTk.PhotoImage(im)
+
+    can.delete("image")
+    can.create_image([(WIDTH + x) / 2 - x/2,
+                      0 + y / 2], 
+                     image=wiftk, 
+                     tags="image")
 
 def check_and_snap(force=False):
     global  wiftk, Button_enabled
@@ -38,19 +55,8 @@ def check_and_snap(force=False):
        Button_enabled = False
        can.delete("text")
        can.update()
-       im = snap(can)
-
-       x,y = im.size
-       x/= SCALE
-       y/= SCALE
-       im = im.resize((x,y));
-       wiftk = ImageTk.PhotoImage(im)
-            
-       can.delete("image")
-       can.create_image([(WIDTH + x) / 2 - x/2,
-                              0 + y / 2], 
-                            image=wiftk, 
-                            tags="image")
+       im = snap(can, n_count=N_COUNT)
+       display_image(im)
        can.delete("text")
        can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
        can.update()
@@ -76,7 +82,16 @@ def sendPic(*args):
         etext.focus_set()
     except Exception, e:
         print 'Send Failed'
-            
+        can.delete("all")
+        can.create_text(WIDTH/2, HEIGHT - 210, text="Send Failed", font=("times", 50), tags="text")
+        can.update()
+        time.sleep(1)
+        can.delete("all")
+        im = Image.open("photo.jpg")
+        display_image(im)
+        can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
+        can.update()
+
         
 FONT = ('Times', 24)
 ser = findser()

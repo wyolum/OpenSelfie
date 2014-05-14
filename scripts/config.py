@@ -35,6 +35,6 @@ if False:
     gmailPassword = password
 else:
     username = 'wyolum@gmail.com'
-    password = 'awukneukgyhspliz'
-    gmailUser = 'wyolum@gmail.com'
+    password = 'SECRETPASS'
+    gmailUser = username
     gmailPassword = password
