@@ -27,12 +27,14 @@ def Credential__test__():
     q = Credential('password')
     assert p == q
     p.reset()
-        
-# username = 'XXXXXXX@gmail.com'
-# password = 'YYYYYYYY'
-# gmailUser = 'ZZZZ@gmail.com'
-# gmailPassword = 'QQQQQQQ'
-username = Credential('username', hidden=False)
-password = Credential('password')
-gmailUser = username
-gmailPassword = password
+
+if False:
+    username = Credential('username', hidden=False)
+    password = Credential('password')
+    gmailUser = username
+    gmailPassword = password
+else:
+    username = 'XXXXXXXX@gmail.com'
+    password = 'YYYYYYYY'
+    gmailUser = 'ZZZZ@gmail.com'
+    gmailPassword = 'QQQQQQQ'
