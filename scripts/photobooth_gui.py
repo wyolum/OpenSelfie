@@ -3,9 +3,10 @@ from Tkinter import *
 import ImageTk
 from mailfile import *
 import custom
+import Image
 
-WIDTH = 1280
-HEIGHT = 800
+WIDTH = 1366
+HEIGHT = 788
 SCALE = 2
 
 root = Tk()
@@ -22,19 +23,23 @@ def interrupted(signum, frame):
     print 'interrupted!'
     signal.signal(signal.SIGALRM, interrupted)
 
-def check_and_snap():
+def check_and_snap(force=False):
     global  wiftk, Button_enabled
+    
 
-    can.delete("text")
-    tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
-    can.update()
     if (Button_enabled == False):
        ser.write('e') #enable button
        Button_enabled = True
+       can.delete("text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
+       can.update()
     command = ser.readline().strip()
-    if command == "snap":
+    if Button_enabled and (force or command == "snap"):
        Button_enabled = False
-       im = snap()
+       can.delete("text")
+       can.update()
+       im = snap(can)
+
        x,y = im.size
        x/= SCALE
        y/= SCALE
@@ -47,15 +52,20 @@ def check_and_snap():
                             image=wiftk, 
                             tags="image")
        can.delete("text")
-
-       tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
        can.update()
        googleUpload('photo.jpg')
+       can.delete("text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
+       can.update()
     else:
         if command.strip():
             print command
-    root.after(100, check_and_snap)
+    if not force:
+        root.after(100, check_and_snap)
 
+def force_snap():
+    check_and_snap(force=True)
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
     global email_addr;
@@ -83,10 +93,11 @@ Button(frame, text="SendEmail", command=sendPic, font=FONT).pack(side=RIGHT)
 etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
 etext.pack()
 frame.pack()
+Button(root, text="*snap*", command=force_snap, font=FONT).pack(side=RIGHT)
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
 setup_google()
-root.after(100, check_and_snap)
+root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)
