@@ -76,7 +76,6 @@ def sendPic(*args):
         etext.focus_set()
     except Exception, e:
         print 'Send Failed'
-        raise
             
         
 FONT = ('Times', 24)

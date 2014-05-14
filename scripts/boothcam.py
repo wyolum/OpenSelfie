@@ -53,7 +53,6 @@ def countdown(camera, can):
                 time.sleep(.2)
                 led_state = not led_state
                 camera.led = led_state
-        print i
     can.delete("text")
     can.update()
     camera.stop_preview()
