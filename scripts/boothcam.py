@@ -20,6 +20,12 @@ N_COUNTDOWN = 5
 FONTSIZE=100
 font = ('Times', FONTSIZE)
 
+def safe_set_led(camera, state):
+    try:
+        camera.led = state
+    except:
+        pass
+
 def setup_google():
     global client
     # Create a client class which will make HTTP requests with Google Docs server.
@@ -30,12 +36,12 @@ def setup_google():
 def countdown(camera, can, n_count):
     camera.start_preview()
     can.delete("image")
-    camera.led = False
+    led_state = False
+    safe_set_led(camera, led_state)
     camera.preview_alpha = 100
     camera.preview_window = (0, 0, SCREEN_W, SCREEN_H)
     camera.preview_fullscreen = False
 
-    led_state = False
     can.delete("all")
 
     for i in range(n_count):
@@ -46,12 +52,12 @@ def countdown(camera, can, n_count):
         if i < n_count - 2:
             time.sleep(1)
             led_state = not led_state
-            camera.led = led_state
+            safe_set_led(camera, led_state)
         else:
             for j in range(5):
                 time.sleep(.2)
                 led_state = not led_state
-                camera.led = led_state
+                safe_set_led(camera, led_state)
     can.delete("text")
     can.update()
     camera.stop_preview()
