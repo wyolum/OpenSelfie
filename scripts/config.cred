@@ -1,3 +1,6 @@
+#todo: finish this
+# this is set up to configure password at startup. It's not working yet, so for now we have a simple static global setup
+
 #set these up in your google account
 import getpass
 import os.path

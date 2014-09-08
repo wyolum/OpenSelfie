@@ -11,8 +11,8 @@ logo = Image.open(custom.logopng)
 lxsize, lysize = logo.size
 
     
-SCREEN_W = 1366
-SCREEN_H = 788 
+SCREEN_W = 1280
+SCREEN_H = 720 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 N_COUNTDOWN = 5
@@ -71,7 +71,7 @@ def snap(can, n_count):
     camera.close()
 
     snap = Image.open('image.jpg')
-    snap.paste(logo,(0,550),logo)
+    snap.paste(logo,(0,SCREEN_H -lysize ),logo)
     snap.save('photo.jpg')
     return snap
 
@@ -82,5 +82,5 @@ def findser():
 
 def googleUpload(filen):
     #upload to picasa album
-    album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, '5991503150459533249')
-    photo = client.InsertPhotoSimple(album_url,'NoVa Snap','Northern Virginia Mini-Maker Faire', filen ,content_type='image/jpeg')
+    album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, custom.albumID)
+    photo = client.InsertPhotoSimple(album_url,'NoVa Snap',custom.photoCaption, filen ,content_type='image/jpeg')
