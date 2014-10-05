@@ -28,10 +28,19 @@ def safe_set_led(camera, state):
 
 def setup_google():
     global client
-    # Create a client class which will make HTTP requests with Google Docs server.
-    client = gdata.photos.service.PhotosService()
-    # Authenticate using your Google Docs email address and password.
-    client.ClientLogin(config.username, config.password)
+
+    out = True
+    try:
+        # Create a client class which will make HTTP requests with Google Docs server.
+        client = gdata.photos.service.PhotosService()
+        # Authenticate using your Google Docs email address and password.
+        client.ClientLogin(config.username, config.password)
+    except KeyboardInterrupt:
+        raise
+    except:
+        print 'could not login to Google'
+        out = False
+    return out
 
 def countdown(camera, can, n_count):
     camera.start_preview()

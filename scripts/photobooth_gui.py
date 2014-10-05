@@ -4,6 +4,7 @@ import ImageTk
 from mailfile import *
 import custom
 import Image
+import config
 
 WIDTH = 1366
 HEIGHT = 788
@@ -42,6 +43,13 @@ def display_image(im=None):
 
 def check_and_snap(force=False):
     global  wiftk, Button_enabled
+
+    if signed_in:
+        send_button.config(state=ACTIVE)
+        etext.config(state=ACTIVE)
+    else:
+        send_button.config(state=DISABLED)
+        etext.config(state=DISABLED)
     
 
     if (Button_enabled == False):
@@ -60,7 +68,8 @@ def check_and_snap(force=False):
        can.delete("text")
        can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
        can.update()
-       googleUpload('photo.jpg')
+       if signed_in:
+           googleUpload('photo.jpg')
        can.delete("text")
        can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
        can.update()
@@ -103,14 +112,25 @@ root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 #Button(frame, text="Exit", command=quit).pack(side=LEFT)
-Button(frame, text="SendEmail", command=sendPic, font=FONT).pack(side=RIGHT)
+send_button = Button(frame, text="SendEmail", command=sendPic, font=FONT)
+send_button.pack(side=RIGHT)
+
 etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
 etext.pack()
 frame.pack()
-Button(root, text="*snap*", command=force_snap, font=FONT).pack(side=RIGHT)
+snap_button = Button(root, text="*snap*", command=force_snap, font=FONT)
+snap_button.pack(side=RIGHT)
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
-setup_google()
+
+if config.SIGN_ME_IN:
+    signed_in = setup_google()
+else:
+    signed_in = False
+if not signed_in:
+    send_button.config(state=DISABLED)
+    etext.config(state=DISABLED)
+
 root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
