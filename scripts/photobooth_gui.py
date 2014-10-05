@@ -45,8 +45,8 @@ def check_and_snap(force=False):
     global  wiftk, Button_enabled
 
     if signed_in:
-        send_button.config(state=ACTIVE)
-        etext.config(state=ACTIVE)
+        send_button.config(state=NORMAL)
+        etext.config(state=NORMAL)
     else:
         send_button.config(state=DISABLED)
         etext.config(state=DISABLED)

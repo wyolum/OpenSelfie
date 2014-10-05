@@ -11,8 +11,8 @@ logo = Image.open(custom.logopng)
 lxsize, lysize = logo.size
 
     
-SCREEN_W = 1280
-SCREEN_H = 720 
+SCREEN_W = 1366
+SCREEN_H = 768 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 N_COUNTDOWN = 5
@@ -38,7 +38,7 @@ def setup_google():
     except KeyboardInterrupt:
         raise
     except:
-        print 'could not login to Google'
+        print 'could not login to Google, check .credential file'
         out = False
     return out
 
@@ -72,7 +72,6 @@ def countdown(camera, can, n_count):
     camera.stop_preview()
 
 def snap(can, n_count):
-    global logo ,client
 
     camera = picamera.PiCamera()
     countdown(camera, can, n_count)
