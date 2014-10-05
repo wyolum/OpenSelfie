@@ -1,6 +1,6 @@
 #set these up in your google account
-username = 'wyolum@gmail.com'
-password = "WyoLumIsHere"
+username = 'you@gmail.com'
+password = "YourPassword"
 gmailUser = username
 gmailPassword = password
 
