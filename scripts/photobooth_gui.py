@@ -3,10 +3,13 @@ from Tkinter import *
 import ImageTk
 from mailfile import *
 import custom
+import Image
+import config
 
-WIDTH = 1280
-HEIGHT = 800
+WIDTH = 1366
+HEIGHT = 788
 SCALE = 2
+N_COUNT = 5
 
 root = Tk()
 Button_enabled = False
@@ -22,40 +25,62 @@ def interrupted(signum, frame):
     print 'interrupted!'
     signal.signal(signal.SIGALRM, interrupted)
 
-def check_and_snap():
+def display_image(im=None):
+    global wiftk
+    
+    x,y = im.size
+    x/= SCALE
+    y/= SCALE
+    
+    im = im.resize((x,y));
+    wiftk = ImageTk.PhotoImage(im)
+
+    can.delete("image")
+    can.create_image([(WIDTH + x) / 2 - x/2,
+                      0 + y / 2], 
+                     image=wiftk, 
+                     tags="image")
+
+def check_and_snap(force=False):
     global  wiftk, Button_enabled
 
-    can.delete("text")
-    tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
-    can.update()
+    if signed_in:
+        send_button.config(state=NORMAL)
+        etext.config(state=NORMAL)
+    else:
+        send_button.config(state=DISABLED)
+        etext.config(state=DISABLED)
+    
+
     if (Button_enabled == False):
        ser.write('e') #enable button
        Button_enabled = True
-    command = ser.readline().strip()
-    if command == "snap":
-       Button_enabled = False
-       im = snap()
-       x,y = im.size
-       x/= SCALE
-       y/= SCALE
-       im = im.resize((x,y));
-       wiftk = ImageTk.PhotoImage(im)
-            
-       can.delete("image")
-       can.create_image([(WIDTH + x) / 2 - x/2,
-                              0 + y / 2], 
-                            image=wiftk, 
-                            tags="image")
        can.delete("text")
-
-       tid = can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
        can.update()
-       googleUpload('photo.jpg')
+    command = ser.readline().strip()
+    if Button_enabled and (force or command == "snap"):
+       Button_enabled = False
+       can.delete("text")
+       can.update()
+       im = snap(can, n_count=N_COUNT)
+       display_image(im)
+       can.delete("text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
+       can.update()
+       if signed_in:
+           googleUpload('photo.jpg')
+       can.delete("text")
+       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
+       can.update()
     else:
         if command.strip():
             print command
-    root.after(100, check_and_snap)
+    if not force:
+        root.after(100, check_and_snap)
 
+def force_snap():
+    check_and_snap(force=True)
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
     global email_addr;
@@ -66,8 +91,16 @@ def sendPic(*args):
         etext.focus_set()
     except Exception, e:
         print 'Send Failed'
-        raise
-            
+        can.delete("all")
+        can.create_text(WIDTH/2, HEIGHT - 210, text="Send Failed", font=("times", 50), tags="text")
+        can.update()
+        time.sleep(1)
+        can.delete("all")
+        im = Image.open("photo.jpg")
+        display_image(im)
+        can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
+        can.update()
+
         
 FONT = ('Times', 24)
 ser = findser()
@@ -79,14 +112,26 @@ root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 #Button(frame, text="Exit", command=quit).pack(side=LEFT)
-Button(frame, text="SendEmail", command=sendPic, font=FONT).pack(side=RIGHT)
+send_button = Button(frame, text="SendEmail", command=sendPic, font=FONT)
+send_button.pack(side=RIGHT)
+
 etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
 etext.pack()
 frame.pack()
+snap_button = Button(root, text="*snap*", command=force_snap, font=FONT)
+snap_button.pack(side=RIGHT)
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
-setup_google()
-root.after(100, check_and_snap)
+
+if config.SIGN_ME_IN:
+    signed_in = setup_google()
+else:
+    signed_in = False
+if not signed_in:
+    send_button.config(state=DISABLED)
+    etext.config(state=DISABLED)
+
+root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)

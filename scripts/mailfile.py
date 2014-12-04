@@ -9,6 +9,7 @@ from email.MIMEAudio import MIMEAudio
 from email.MIMEImage import MIMEImage
 from email.Encoders import encode_base64
 import config
+import email_logger
 
 def sendMail(recipient,subject, text, *attachmentFilePaths):
   msg = MIMEMultipart()
@@ -26,6 +27,10 @@ def sendMail(recipient,subject, text, *attachmentFilePaths):
   mailServer.sendmail(config.gmailUser, recipient, msg.as_string())
   mailServer.close()
   print('Sent email to %s' % recipient)
+  
+  ### log email address
+  email_logger.log("", recipient)
+
 def getAttachment(attachmentFilePath):
   contentType, encoding = mimetypes.guess_type(attachmentFilePath)
   if contentType is None or encoding is not None:
