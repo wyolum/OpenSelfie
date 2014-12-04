@@ -1,5 +1,5 @@
 # Fabricate
-## Source files for Make Photobooth
+## Source files for The Wyolum Photobooth featured in Make Magazine
 Cutting SVG's are in the main directory:
 * photobooth-make-front.svg
 * photobooth-make-back.svg
