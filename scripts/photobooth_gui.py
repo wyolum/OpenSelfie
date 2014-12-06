@@ -6,6 +6,7 @@ WyoLum.com
 '''
 
 ## imports
+import time
 from boothcam import *
 from Tkinter import *
 import ImageTk
@@ -22,7 +23,7 @@ HEIGHT = 788
 SCALE = 1.25 ### was 2
 
 ## the countdown starting value
-N_COUNT = 1
+N_COUNT = config.n_count
 
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
@@ -35,6 +36,8 @@ Button_enabled = False
 
 import signal
 TIMEOUT = .3 # number of seconds your want for timeout
+
+last_snap = time.time()
 
 def interrupted(signum, frame):
     "called when serial read times out"
@@ -60,7 +63,13 @@ def display_image(im=None):
                       0 + y / 2], 
                      image=image_tk, 
                      tags="image")
-    
+
+def timelapse_due():
+    '''
+    Return true if a time lapse photo is due to be taken (see config.TIMELAPSE)
+    '''
+    return (config.TIMELAPSE > 0) and (time.time() - last_snap > config.TIMELAPSE)
+
 def check_and_snap(force=False, n_count=N_COUNT):
     '''
     Check button status and snap a photo if button has been pressed.
@@ -68,7 +77,7 @@ def check_and_snap(force=False, n_count=N_COUNT):
     force -- take a snapshot regarless of button status
     n_count -- starting value for countdown timer
     '''
-    global  image_tk, Button_enabled
+    global  image_tk, Button_enabled, last_snap
 
     if signed_in:
         send_button.config(state=NORMAL)
@@ -79,28 +88,30 @@ def check_and_snap(force=False, n_count=N_COUNT):
     
     if (Button_enabled == False):
         ## inform alamode that we are ready to receive button press events
-        ser.write('e') #enable button
+        ## ser.write('e') #enable button (not used)
         Button_enabled = True
-        can.delete("text")
-        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
-        can.update()
+        # can.delete("text")
+        # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
+        # can.update()
         
     ## get command string from alamode
     command = ser.readline().strip()
-    if Button_enabled and (force or command == "snap"):
+    if Button_enabled and (force or command == "snap" or timelapse_due()):
         ## take a photo and display it
         Button_enabled = False
         can.delete("text")
         can.update()
         im = snap(can, n_count=n_count)
+        
+        last_snap = time.time()
         display_image(im)
         can.delete("text")
-        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=("times", 50), tags="text")
+        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=config.CANVAS_FONT, tags="text")
         can.update()
         if signed_in:
             googleUpload('photo.jpg')
         can.delete("text")
-        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
+        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
         can.update()
     else:
         ### what command did we get?
@@ -127,7 +138,6 @@ def force_snap(n_count=N_COUNT):
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
     if signed_in:
-        global email_addr;
         print 'sending photo by email to %s' % email_addr.get()
         try:
             sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg,'photo.jpg')
@@ -136,13 +146,13 @@ def sendPic(*args):
         except Exception, e:
             print 'Send Failed'
             can.delete("all")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=("times", 50), tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=config.CANVAS_FONT, tags="text")
             can.update()
             time.sleep(1)
             can.delete("all")
             im = Image.open("photo.jpg")
             display_image(im)
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
             can.update()
     else:
         print 'Not signed in'
@@ -150,11 +160,17 @@ def sendPic(*args):
 ## find the serial port for the alamode
 ser = findser()
 
-### set up GUI
-FONT = ('Times', 24)
+
+def delay_timelapse(*args):
+    '''
+    Prevent a timelapse snapshot when someone is typeing an email address
+    '''
+    global last_snap
+    last_snap = time.time()
 
 #bound to text box for email
 email_addr = StringVar()
+email_addr.trace('w', delay_timelapse)
 
 ## bound to RGB sliders
 r_var = IntVar()
@@ -179,11 +195,11 @@ root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
 #Button(frame, text="Exit", command=quit).pack(side=LEFT)
-send_button = Button(frame, text="SendEmail", command=sendPic, font=FONT)
+send_button = Button(frame, text="SendEmail", command=sendPic, font=config.BUTTON_FONT)
 send_button.pack(side=RIGHT)
 
 ## add a text entry box for email addresses
-etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
+etext = Entry(frame,width=40, textvariable=email_addr, font=config.BUTTON_FONT)
 etext.pack()
 frame.pack()
 
@@ -201,7 +217,7 @@ g_slider = labeled_slider(rgb_frame, 'G', from_=0, to=255, side=LEFT, variable=g
 b_slider = labeled_slider(rgb_frame, 'B', from_=0, to=255, side=LEFT, variable=b_var)
 
 rgb_frame.pack(side=TOP)
-snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=FONT)
+snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=config.BUTTON_FONT)
 snap_button.pack(side=RIGHT)
 interface_frame.pack(side=RIGHT)
 
@@ -219,6 +235,9 @@ if not signed_in:
     etext.config(state=DISABLED)
 
 ### take the first photo (no delay)
+can.delete("text")
+can.create_text(WIDTH/2, HEIGHT/2, text="SMILE!", font=config.CANVAS_FONT, tags="splash")
+can.update()
 force_snap(n_count=0)
 
 ### check button after waiting for 200 ms
