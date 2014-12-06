@@ -68,7 +68,13 @@ def timelapse_due():
     '''
     Return true if a time lapse photo is due to be taken (see config.TIMELAPSE)
     '''
-    return (config.TIMELAPSE > 0) and (time.time() - last_snap > config.TIMELAPSE)
+    if config.TIMELAPSE > 0:
+        togo = config.TIMELAPSE - (time.time() - last_snap)
+        timelapse_label.config(text=str(int(togo)))
+        out = togo < 0
+    else:
+        out = False
+    return out
 
 def check_and_snap(force=False, n_count=N_COUNT):
     '''
@@ -85,7 +91,6 @@ def check_and_snap(force=False, n_count=N_COUNT):
     else:
         send_button.config(state=DISABLED)
         etext.config(state=DISABLED)
-    
     if (Button_enabled == False):
         ## inform alamode that we are ready to receive button press events
         ## ser.write('e') #enable button (not used)
@@ -101,18 +106,21 @@ def check_and_snap(force=False, n_count=N_COUNT):
         Button_enabled = False
         can.delete("text")
         can.update()
-        im = snap(can, n_count=n_count)
         
-        last_snap = time.time()
-        display_image(im)
-        can.delete("text")
-        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=config.CANVAS_FONT, tags="text")
-        can.update()
-        if signed_in:
-            googleUpload('photo.jpg')
-        can.delete("text")
-        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
-        can.update()
+        if timelapse_due():
+            n_count = 0
+        im = snap(can, n_count=n_count)
+        if im is not None:
+            last_snap = time.time()
+            display_image(im)
+            can.delete("text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=config.CANVAS_FONT, tags="text")
+            can.update()
+            if signed_in:
+                googleUpload('photo.jpg')
+            can.delete("text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
+            can.update()
     else:
         ### what command did we get?
         if command.strip():
@@ -194,9 +202,15 @@ root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
-#Button(frame, text="Exit", command=quit).pack(side=LEFT)
+# Button(frame, text="Exit", command=on_close).pack(side=LEFT)
 send_button = Button(frame, text="SendEmail", command=sendPic, font=config.BUTTON_FONT)
 send_button.pack(side=RIGHT)
+
+if config.TIMELAPSE > 0:
+    timelapse_label = Label(frame, text=config.TIMELAPSE)
+else:
+    timelapse_label = Label(frame, text='')
+timelapse_label.pack(side=LEFT)
 
 ## add a text entry box for email addresses
 etext = Entry(frame,width=40, textvariable=email_addr, font=config.BUTTON_FONT)

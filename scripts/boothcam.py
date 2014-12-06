@@ -72,16 +72,19 @@ def countdown(camera, can, n_count):
     camera.stop_preview()
 
 def snap(can, n_count):
-
-    camera = picamera.PiCamera()
-    countdown(camera, can, n_count)
-    camera.capture('image.jpg')
-    camera.close()
-
-    snap = Image.open('image.jpg')
-    snap.paste(logo,(0,SCREEN_H -lysize ),logo)
-    snap.save('photo.jpg')
-    return snap
+    try:
+        camera = picamera.PiCamera()
+        countdown(camera, can, n_count)
+        camera.capture('image.jpg')
+        camera.close()
+    
+        snapshot = Image.open('image.jpg')
+        snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
+        snapshot.save('photo.jpg')
+    except:
+        snapshot = None
+    return snapshot
+snap.active = False
 
 def findser():
     ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)
