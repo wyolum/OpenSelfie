@@ -25,3 +25,4 @@ gmailUser = username
 gmailPassword = password
 
 SIGN_ME_IN = True
+# SIGN_ME_IN = False; print 'DBG:: not signing in'

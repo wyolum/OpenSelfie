@@ -1,3 +1,11 @@
+'''
+Open source photo booth.
+
+Kevin Osborn and Justin Shaw
+WyoLum.com
+'''
+
+## imports
 from boothcam import *
 from Tkinter import *
 import ImageTk
@@ -6,43 +14,61 @@ import custom
 import Image
 import config
 
+## set display geometry
 WIDTH = 1366
 HEIGHT = 788
-SCALE = 2
-N_COUNT = 5
 
+## set photo size to fit nicely in screen
+SCALE = 1.25 ### was 2
+
+## the countdown starting value
+N_COUNT = 1
+
+## put the status widget below the displayed image
+STATUS_H_OFFSET = 150 ## was 210
+
+## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
-Button_enabled = False
 
-def quit():
-    root.destroy()
+## only accept button inputs from the AlaMode when ready
+Button_enabled = False
 
 import signal
 TIMEOUT = .3 # number of seconds your want for timeout
 
 def interrupted(signum, frame):
-    "called when read times out"
+    "called when serial read times out"
     print 'interrupted!'
     signal.signal(signal.SIGALRM, interrupted)
 
 def display_image(im=None):
-    global wiftk
+    '''
+    display image im in GUI window
+    '''
+    global image_tk
     
     x,y = im.size
-    x/= SCALE
-    y/= SCALE
-    
-    im = im.resize((x,y));
-    wiftk = ImageTk.PhotoImage(im)
+    x = int(x / SCALE)
+    y = int(y / SCALE)
 
+    im = im.resize((x,y));
+    image_tk = ImageTk.PhotoImage(im)
+
+    ## delete all canvas elements with "image" in the tag
     can.delete("image")
     can.create_image([(WIDTH + x) / 2 - x/2,
                       0 + y / 2], 
-                     image=wiftk, 
+                     image=image_tk, 
                      tags="image")
+    
+def check_and_snap(force=False, n_count=N_COUNT):
+    '''
+    Check button status and snap a photo if button has been pressed.
 
-def check_and_snap(force=False):
-    global  wiftk, Button_enabled
+    force -- take a snapshot regarless of button status
+    n_count -- starting value for countdown timer
+    '''
+    global  image_tk, Button_enabled
 
     if signed_in:
         send_button.config(state=NORMAL)
@@ -51,78 +77,139 @@ def check_and_snap(force=False):
         send_button.config(state=DISABLED)
         etext.config(state=DISABLED)
     
-
     if (Button_enabled == False):
-       ser.write('e') #enable button
-       Button_enabled = True
-       can.delete("text")
-       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
-       can.update()
+        ## inform alamode that we are ready to receive button press events
+        ser.write('e') #enable button
+        Button_enabled = True
+        can.delete("text")
+        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
+        can.update()
+        
+    ## get command string from alamode
     command = ser.readline().strip()
     if Button_enabled and (force or command == "snap"):
-       Button_enabled = False
-       can.delete("text")
-       can.update()
-       im = snap(can, n_count=N_COUNT)
-       display_image(im)
-       can.delete("text")
-       can.create_text(WIDTH/2, HEIGHT - 210, text="Uploading Image", font=("times", 50), tags="text")
-       can.update()
-       if signed_in:
-           googleUpload('photo.jpg')
-       can.delete("text")
-       can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
-       can.update()
+        ## take a photo and display it
+        Button_enabled = False
+        can.delete("text")
+        can.update()
+        im = snap(can, n_count=n_count)
+        display_image(im)
+        can.delete("text")
+        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=("times", 50), tags="text")
+        can.update()
+        if signed_in:
+            googleUpload('photo.jpg')
+        can.delete("text")
+        can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
+        can.update()
     else:
+        ### what command did we get?
         if command.strip():
             print command
     if not force:
-        root.after(100, check_and_snap)
+        ## call this function again in 100 ms
+        root.after_id = root.after(100, check_and_snap)
 
-def force_snap():
-    check_and_snap(force=True)
+## for clean shutdowns
+root.after_id = None
+def on_close(*args, **kw):
+    '''
+    when window closes cancel pending root.after() call
+    '''
+    if root.after_id is not None:
+        root.after_cancel(root.after_id)
+    root.quit()
+root.protocol('WM_DELETE_WINDOW', on_close)
+
+def force_snap(n_count=N_COUNT):
+    check_and_snap(force=True, n_count=n_count)
+
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
-    global email_addr;
-    print 'sending photo by email to %s' % email_addr.get()
-    try:
-        sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg,'photo.jpg')
-        etext.delete(0, END)
-        etext.focus_set()
-    except Exception, e:
-        print 'Send Failed'
-        can.delete("all")
-        can.create_text(WIDTH/2, HEIGHT - 210, text="Send Failed", font=("times", 50), tags="text")
-        can.update()
-        time.sleep(1)
-        can.delete("all")
-        im = Image.open("photo.jpg")
-        display_image(im)
-        can.create_text(WIDTH/2, HEIGHT - 210, text="Press button when ready", font=("times", 50), tags="text")
-        can.update()
+    if signed_in:
+        global email_addr;
+        print 'sending photo by email to %s' % email_addr.get()
+        try:
+            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg,'photo.jpg')
+            etext.delete(0, END)
+            etext.focus_set()
+        except Exception, e:
+            print 'Send Failed'
+            can.delete("all")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=("times", 50), tags="text")
+            can.update()
+            time.sleep(1)
+            can.delete("all")
+            im = Image.open("photo.jpg")
+            display_image(im)
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=("times", 50), tags="text")
+            can.update()
+    else:
+        print 'Not signed in'
 
-        
-FONT = ('Times', 24)
+## find the serial port for the alamode
 ser = findser()
+
+### set up GUI
+FONT = ('Times', 24)
+
 #bound to text box for email
 email_addr = StringVar()
+
+## bound to RGB sliders
+r_var = IntVar()
+g_var = IntVar()
+b_var = IntVar()
+
+## send RGB changes to alamode
+def on_rgb_change(*args):
+    rgb_command = 'c%s%s%s' % (chr(r_var.get()), chr(g_var.get()), chr(b_var.get()))
+    ser.write(rgb_command)
+
+## call on_rgb_change when any of the sliders move
+r_var.trace('w', on_rgb_change)
+g_var.trace('w', on_rgb_change)
+b_var.trace('w', on_rgb_change)
+
 w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+
 # root.overrideredirect(1)
 root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
+
 #Button(frame, text="Exit", command=quit).pack(side=LEFT)
 send_button = Button(frame, text="SendEmail", command=sendPic, font=FONT)
 send_button.pack(side=RIGHT)
 
+## add a text entry box for email addresses
 etext = Entry(frame,width=40, textvariable=email_addr, font=FONT)
 etext.pack()
 frame.pack()
-snap_button = Button(root, text="*snap*", command=force_snap, font=FONT)
+
+def labeled_slider(parent, label, from_, to, side, variable):
+    frame = Frame(parent)
+    Label(frame, text=label).pack(side=TOP)
+    scale = Scale(frame, from_=from_, to=to, variable=variable, resolution=1).pack(side=TOP)
+    frame.pack(side=side)
+    return scale
+## add a software button in case hardware button is not available
+interface_frame = Frame(root)
+rgb_frame = Frame(interface_frame)
+r_slider = labeled_slider(rgb_frame, 'R', from_=0, to=255, side=LEFT, variable=r_var)
+g_slider = labeled_slider(rgb_frame, 'G', from_=0, to=255, side=LEFT, variable=g_var)
+b_slider = labeled_slider(rgb_frame, 'B', from_=0, to=255, side=LEFT, variable=b_var)
+
+rgb_frame.pack(side=TOP)
+snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=FONT)
 snap_button.pack(side=RIGHT)
+interface_frame.pack(side=RIGHT)
+
+## the canvas will display the images
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
 
+## sign in to google?
 if config.SIGN_ME_IN:
     signed_in = setup_google()
 else:
@@ -131,6 +218,10 @@ if not signed_in:
     send_button.config(state=DISABLED)
     etext.config(state=DISABLED)
 
+### take the first photo (no delay)
+force_snap(n_count=0)
+
+### check button after waiting for 200 ms
 root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()

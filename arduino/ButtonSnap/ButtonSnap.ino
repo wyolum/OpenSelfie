@@ -11,27 +11,57 @@
 */
 uint32_t rainbow[] = {16121865,12976185,9830505,6684825,3539145,393465,10965,23205,35445,47685,59925,1632000,4765440,7898880,11032320,14165760
 };
-int ButtonPin = 2;
-long PhotoDelay = 5000;
+const int ButtonPin = 2;
+const int DBG_PIN = 13;
+const long PhotoDelay = 3000;
+
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
+bool dbg_val = false;
 
 void setup() {
   Serial.begin(19200);
   pinMode(ButtonPin, INPUT);
+  pinMode(DBG_PIN, OUTPUT);
   digitalWrite(ButtonPin, HIGH); //turn on pullups
   strip.begin();
   strip.show();
-
+  
+  for(int ii=0; ii < 3; ii++){
+    digitalWrite(DBG_PIN, HIGH);
+    delay(100);
+    digitalWrite(DBG_PIN, LOW);
+    delay(100);
+  }
+  digitalWrite(DBG_PIN, dbg_val);
 }
 
 void loop() {
+  char command;
+  int r, g, b;
+
+  if(Serial.available()){
+    while(Serial.available()){
+      command = Serial.read();
+      if(command == 'c'){ // color change command
+	// wait for command to complete
+	delay(10);
+	if(Serial.available() >= 3){
+	  r = Serial.read();
+	  g = Serial.read();
+	  b = Serial.read();
+	  dbg_val = !dbg_val;
+	  digitalWrite(DBG_PIN, dbg_val);
+	}
+      }
+    }
+  }
   if (digitalRead(ButtonPin) == LOW)
   {
     Serial.println("snap");// send to Pi
     StartCountdown(PhotoDelay/1000); //Start blinky Lights
     // The Pi will be processing the image for a while. Could add
     // red green ready light/strip
-    delay (2000); // allow pi to process the previous image
+    delay (PhotoDelay); // allow pi to process the previous image
   }
 
 }
