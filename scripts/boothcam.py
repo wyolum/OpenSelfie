@@ -1,3 +1,6 @@
+import glob
+import os
+import os.path
 import time
 import picamera
 from time import sleep
@@ -7,8 +10,13 @@ import serial
 import config
 import custom
 
-logo = Image.open(custom.logopng)
-lxsize, lysize = logo.size
+if os.path.exists(custom.logopng):
+    logo = Image.open(custom.logopng)
+    lxsize, lysize = logo.size
+else:
+    logo = None
+    lxsize = 0
+    lysize = 0
 
     
 SCREEN_W = 1366
@@ -72,16 +80,32 @@ def countdown(camera, can, n_count):
     camera.stop_preview()
 
 def snap(can, n_count):
+    global image_idx
 
-    camera = picamera.PiCamera()
-    countdown(camera, can, n_count)
-    camera.capture('image.jpg')
-    camera.close()
+    try:
+        if config.ARCHIVE and os.path.exists(config.PROC_FILENAME):
+            ### copy image to archive
+            image_idx += 1
+            os.rename(config.PROC_FILENAME, 'Archive/%s_%05d.%s' % (config.PROC_FILENAME[:-4], image_idx, config.EXT))
+        camera = picamera.PiCamera()
+        countdown(camera, can, n_count)
+        camera.capture(config.RAW_FILENAME)
+        camera.close()
+    
+        snapshot = Image.open(config.RAW_FILENAME)
+        if logo is not None:
+            snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
+        snapshot.save(config.PROC_FILENAME)
+    except Exception, e:
+        print e
+        snapshot = None
+    return snapshot
+snap.active = False
 
-    snap = Image.open('image.jpg')
-    snap.paste(logo,(0,SCREEN_H -lysize ),logo)
-    snap.save('photo.jpg')
-    return snap
+if config.ARCHIVE:
+    if not os.path.exists('Archive'):
+        os.mkdir('Archive')
+    image_idx = len(glob.glob('Archive/%s_*.%s' % (config.RAW_FILENAME[:-4], config.EXT)))
 
 def findser():
     ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)
