@@ -25,10 +25,14 @@ gmailUser = username
 gmailPassword = password
 n_count = 5
 
-TIMELAPSE = 60 ## use 0 for no time lapse photos
+TIMELAPSE = 20 ## use 0 for no time lapse photos
 ### set up GUI
 BUTTON_FONT = ('Times', 24)
 CANVAS_FONT = ("times", 50)
 
 # SIGN_ME_IN = True
 SIGN_ME_IN = False; print 'DBG:: not signing in'
+ARCHIVE = True
+EXT = 'jpg'
+RAW_FILENAME = 'image.' + EXT
+PROC_FILENAME = 'photo.' + EXT

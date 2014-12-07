@@ -117,7 +117,7 @@ def check_and_snap(force=False, n_count=N_COUNT):
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=config.CANVAS_FONT, tags="text")
             can.update()
             if signed_in:
-                googleUpload('photo.jpg')
+                googleUpload(config.PROC_FILENAME)
             can.delete("text")
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
             can.update()
@@ -148,7 +148,7 @@ def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
         try:
-            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg,'photo.jpg')
+            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, config.PROC_FILENAME)
             etext.delete(0, END)
             etext.focus_set()
         except Exception, e:
@@ -158,7 +158,7 @@ def sendPic(*args):
             can.update()
             time.sleep(1)
             can.delete("all")
-            im = Image.open("photo.jpg")
+            im = Image.open(config.PROC_FILENAME)
             display_image(im)
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
             can.update()
@@ -250,7 +250,7 @@ if not signed_in:
 
 ### take the first photo (no delay)
 can.delete("text")
-can.create_text(WIDTH/2, HEIGHT/2, text="SMILE!", font=config.CANVAS_FONT, tags="splash")
+can.create_text(WIDTH/2, HEIGHT/2, text="SMILE ;-)", font=config.CANVAS_FONT, tags="splash")
 can.update()
 force_snap(n_count=0)
 
