@@ -20,7 +20,7 @@ tim_LENGTH = 4.2 * inch + 2 * T + 2 * .4 * inch # main_WIDTH + 2 * T
 tim_WIDTH = main_HEIGHT + 2 * T
 tim_HEIGHT =  main_LENGTH + 2 * T
 can = new_canvas("TiM_lada.pdf", 20*inch, 12*inch, .5*inch)
-tim_lada = Lada(tim_LENGTH, tim_WIDTH, tim_HEIGHT, T, max_edge_span=200*mm)
+tim_lada = Lada(tim_LENGTH, tim_WIDTH, tim_HEIGHT, T, max_edge_span=400*mm)
 tim_lada.drawOn(can)
 can.save()
 print 'wrote', can._filename
