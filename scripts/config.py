@@ -23,7 +23,7 @@ username = cred.key
 password = cred.value
 gmailUser = username
 gmailPassword = password
-n_count = 5
+n_count = 0
 
 TIMELAPSE = 20 ## use 0 for no time lapse photos
 ### set up GUI

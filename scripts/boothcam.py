@@ -94,7 +94,8 @@ def snap(can, n_count):
     
         snapshot = Image.open(config.RAW_FILENAME)
         if logo is not None:
-            snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
+            # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
+            snapshot.paste(logo,(SCREEN_W/2 - logo.size[0]/2,SCREEN_H -lysize ),logo)
         snapshot.save(config.PROC_FILENAME)
     except Exception, e:
         print e
@@ -105,7 +106,7 @@ snap.active = False
 if config.ARCHIVE:
     if not os.path.exists('Archive'):
         os.mkdir('Archive')
-    image_idx = len(glob.glob('Archive/%s_*.%s' % (config.RAW_FILENAME[:-4], config.EXT)))
+    image_idx = len(glob.glob('Archive/%s_*.%s' % (config.PROC_FILENAME[:-4], config.EXT)))
 
 def findser():
     ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)
