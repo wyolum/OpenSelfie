@@ -16,7 +16,7 @@ const int DBG_PIN = 13;
 const long PhotoDelay = 3000;
 const int N_PIXEL = 128;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(16, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(N_PIXEL, PIN, NEO_GRB + NEO_KHZ800);
 bool dbg_val = false;
 
 void setup() {
@@ -34,11 +34,21 @@ void setup() {
     delay(100);
   }
   digitalWrite(DBG_PIN, dbg_val);
+  setColor(0, 0, 0);
+}
+
+void setColor(char r, char g, char b){
+  int i;
+
+  for(i = 0; i < N_PIXEL; i++){
+    strip.setPixelColor(i, r, g, b);
+  }
+  strip.show();
 }
 
 void loop() {
   char command;
-  int i, r, g, b;
+  int r, g, b;
 
   if(Serial.available()){
     while(Serial.available()){
@@ -51,10 +61,7 @@ void loop() {
 	  g = Serial.read();
 	  b = Serial.read();
 	  dbg_val = !dbg_val;
-	  for(i = 0; i < N_PIXEL; i++){
-	    strip.setPixelColor(i, r, g, b);
-	  }
-	  strip.show();
+	  setColor(r, g, b);
 	  digitalWrite(DBG_PIN, dbg_val);
 	}
       }
@@ -63,7 +70,7 @@ void loop() {
   if (digitalRead(ButtonPin) == LOW)
   {
     Serial.println("snap");// send to Pi
-    StartCountdown(PhotoDelay/1000); //Start blinky Lights
+    // StartCountdown(PhotoDelay/1000); //Start blinky Lights
     // The Pi will be processing the image for a while. Could add
     // red green ready light/strip
     delay (PhotoDelay); // allow pi to process the previous image

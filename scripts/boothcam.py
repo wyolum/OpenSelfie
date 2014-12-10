@@ -1,3 +1,5 @@
+from subprocess import call
+import tkFileDialog
 import glob
 import os
 import os.path
@@ -86,10 +88,12 @@ def snap(can, n_count):
         if config.ARCHIVE and os.path.exists(config.PROC_FILENAME):
             ### copy image to archive
             image_idx += 1
-            os.rename(config.PROC_FILENAME, 'Archive/%s_%05d.%s' % (config.PROC_FILENAME[:-4], image_idx, config.EXT))
+            new_filename = os.path.join(config.archive_dir, '%s_%05d.%s' % (config.PROC_FILENAME[:-4], image_idx, config.EXT))
+            command = (['cp', config.PROC_FILENAME, new_filename])
+            call(command)
         camera = picamera.PiCamera()
         countdown(camera, can, n_count)
-        camera.capture(config.RAW_FILENAME)
+        camera.capture(config.RAW_FILENAME, resize=(1366, 768))
         camera.close()
     
         snapshot = Image.open(config.RAW_FILENAME)
@@ -104,9 +108,10 @@ def snap(can, n_count):
 snap.active = False
 
 if config.ARCHIVE:
-    if not os.path.exists('Archive'):
-        os.mkdir('Archive')
-    image_idx = len(glob.glob('Archive/%s_*.%s' % (config.PROC_FILENAME[:-4], config.EXT)))
+    config.archive_dir = tkFileDialog.askdirectory(initialdir='/media/')
+    if not os.path.exists(config.archive_dir):
+        os.mkdir(config.archive_dir)
+    image_idx = len(glob.glob(os.path.join(config.archive_dir, '%s_*.%s' % (config.PROC_FILENAME[:-4], config.EXT))))
 
 def findser():
     ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)

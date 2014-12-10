@@ -7,13 +7,18 @@ WyoLum.com
 
 ## imports
 import time
-from boothcam import *
 from Tkinter import *
 import ImageTk
 from mailfile import *
 import custom
 import Image
 import config
+
+## This is a simple GUI, so we allow the root singleton to do the legwork
+root = Tk()
+
+### booth cam may need to present a file dialog gui.  So import after root is defined.
+from boothcam import *
 
 ## set display geometry
 WIDTH = 1366
@@ -27,9 +32,6 @@ N_COUNT = config.n_count
 
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
-
-## This is a simple GUI, so we allow the root singleton to do the legwork
-root = Tk()
 
 ## only accept button inputs from the AlaMode when ready
 Button_enabled = False
@@ -259,4 +261,5 @@ root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)
+on_rgb_change()
 root.mainloop()
