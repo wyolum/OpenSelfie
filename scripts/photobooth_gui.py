@@ -28,7 +28,7 @@ HEIGHT = 788
 SCALE = 1.25 ### was 2
 
 ## the countdown starting value
-N_COUNT = config.n_count
+N_COUNT = custom.n_count
 
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
@@ -68,10 +68,10 @@ def display_image(im=None):
 
 def timelapse_due():
     '''
-    Return true if a time lapse photo is due to be taken (see config.TIMELAPSE)
+    Return true if a time lapse photo is due to be taken (see custom.TIMELAPSE)
     '''
-    if config.TIMELAPSE > 0:
-        togo = config.TIMELAPSE - (time.time() - last_snap)
+    if custom.TIMELAPSE > 0:
+        togo = custom.TIMELAPSE - (time.time() - last_snap)
         timelapse_label.config(text=str(int(togo)))
         out = togo < 0
     else:
@@ -98,7 +98,7 @@ def check_and_snap(force=False, n_count=N_COUNT):
         ## ser.write('e') #enable button (not used)
         Button_enabled = True
         # can.delete("text")
-        # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
+        # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
         # can.update()
         
     ## get command string from alamode
@@ -116,12 +116,12 @@ def check_and_snap(force=False, n_count=N_COUNT):
             last_snap = time.time()
             display_image(im)
             can.delete("text")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=config.CANVAS_FONT, tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
             if signed_in:
-                googleUpload(config.PROC_FILENAME)
+                googleUpload(custom.PROC_FILENAME)
             can.delete("text")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         ### what command did we get?
@@ -139,6 +139,11 @@ def on_close(*args, **kw):
     '''
     if root.after_id is not None:
         root.after_cancel(root.after_id)
+
+    ### turn off LEDs
+    r_var.set(0)
+    g_var.set(0)
+    b_var.set(0)
     root.quit()
 root.protocol('WM_DELETE_WINDOW', on_close)
 
@@ -150,19 +155,19 @@ def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
         try:
-            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, config.PROC_FILENAME)
+            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, custom.PROC_FILENAME)
             etext.delete(0, END)
             etext.focus_set()
         except Exception, e:
             print 'Send Failed'
             can.delete("all")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=config.CANVAS_FONT, tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
             can.update()
             time.sleep(1)
             can.delete("all")
-            im = Image.open(config.PROC_FILENAME)
+            im = Image.open(custom.PROC_FILENAME)
             display_image(im)
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=config.CANVAS_FONT, tags="text")
+            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         print 'Not signed in'
@@ -205,17 +210,17 @@ root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
 # Button(frame, text="Exit", command=on_close).pack(side=LEFT)
-send_button = Button(frame, text="SendEmail", command=sendPic, font=config.BUTTON_FONT)
+send_button = Button(frame, text="SendEmail", command=sendPic, font=custom.BUTTON_FONT)
 send_button.pack(side=RIGHT)
 
-if config.TIMELAPSE > 0:
-    timelapse_label = Label(frame, text=config.TIMELAPSE)
+if custom.TIMELAPSE > 0:
+    timelapse_label = Label(frame, text=custom.TIMELAPSE)
 else:
     timelapse_label = Label(frame, text='')
 timelapse_label.pack(side=LEFT)
 
 ## add a text entry box for email addresses
-etext = Entry(frame,width=40, textvariable=email_addr, font=config.BUTTON_FONT)
+etext = Entry(frame,width=40, textvariable=email_addr, font=custom.BUTTON_FONT)
 etext.pack()
 frame.pack()
 
@@ -225,6 +230,7 @@ def labeled_slider(parent, label, from_, to, side, variable):
     scale = Scale(frame, from_=from_, to=to, variable=variable, resolution=1).pack(side=TOP)
     frame.pack(side=side)
     return scale
+
 ## add a software button in case hardware button is not available
 interface_frame = Frame(root)
 rgb_frame = Frame(interface_frame)
@@ -233,7 +239,7 @@ g_slider = labeled_slider(rgb_frame, 'G', from_=0, to=255, side=LEFT, variable=g
 b_slider = labeled_slider(rgb_frame, 'B', from_=0, to=255, side=LEFT, variable=b_var)
 
 rgb_frame.pack(side=TOP)
-snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=config.BUTTON_FONT)
+snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=custom.BUTTON_FONT)
 snap_button.pack(side=RIGHT)
 interface_frame.pack(side=RIGHT)
 
@@ -242,7 +248,7 @@ can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
 
 ## sign in to google?
-if config.SIGN_ME_IN:
+if custom.SIGN_ME_IN:
     signed_in = setup_google()
 else:
     signed_in = False
@@ -252,7 +258,7 @@ if not signed_in:
 
 ### take the first photo (no delay)
 can.delete("text")
-can.create_text(WIDTH/2, HEIGHT/2, text="SMILE ;-)", font=config.CANVAS_FONT, tags="splash")
+can.create_text(WIDTH/2, HEIGHT/2, text="SMILE ;-)", font=custom.CANVAS_FONT, tags="splash")
 can.update()
 force_snap(n_count=0)
 

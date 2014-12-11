@@ -25,7 +25,6 @@ SCREEN_W = 1366
 SCREEN_H = 768 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-N_COUNTDOWN = 5
 
 FONTSIZE=100
 font = ('Times', FONTSIZE)
@@ -85,33 +84,36 @@ def snap(can, n_count):
     global image_idx
 
     try:
-        if config.ARCHIVE and os.path.exists(config.PROC_FILENAME):
+        if custom.ARCHIVE and os.path.exists(custom.PROC_FILENAME):
             ### copy image to archive
             image_idx += 1
-            new_filename = os.path.join(config.archive_dir, '%s_%05d.%s' % (config.PROC_FILENAME[:-4], image_idx, config.EXT))
-            command = (['cp', config.PROC_FILENAME, new_filename])
+            new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
+            command = (['cp', custom.PROC_FILENAME, new_filename])
             call(command)
         camera = picamera.PiCamera()
         countdown(camera, can, n_count)
-        camera.capture(config.RAW_FILENAME, resize=(1366, 768))
+        camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
         camera.close()
     
-        snapshot = Image.open(config.RAW_FILENAME)
+        snapshot = Image.open(custom.RAW_FILENAME)
         if logo is not None:
             # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
             snapshot.paste(logo,(SCREEN_W/2 - logo.size[0]/2,SCREEN_H -lysize ),logo)
-        snapshot.save(config.PROC_FILENAME)
+        snapshot.save(custom.PROC_FILENAME)
     except Exception, e:
         print e
         snapshot = None
     return snapshot
 snap.active = False
 
-if config.ARCHIVE:
-    config.archive_dir = tkFileDialog.askdirectory(initialdir='/media/')
-    if not os.path.exists(config.archive_dir):
-        os.mkdir(config.archive_dir)
-    image_idx = len(glob.glob(os.path.join(config.archive_dir, '%s_*.%s' % (config.PROC_FILENAME[:-4], config.EXT))))
+if custom.ARCHIVE:
+    custom.archive_dir = tkFileDialog.askdirectory(initialdir='/media/')
+    if custom.archive_dir == '':
+        print 'Directory not found.  Not archiving'
+        custom.ARCHIVE = False
+    elif not os.path.exists(custom.archive_dir):
+        os.mkdir(custom.archive_dir)
+    image_idx = len(glob.glob(os.path.join(custom.archive_dir, '%s_*.%s' % (custom.PROC_FILENAME[:-4], custom.EXT))))
 
 def findser():
     ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)
