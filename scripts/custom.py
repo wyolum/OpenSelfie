@@ -3,7 +3,7 @@ emailSubject = "Your Postcard from the Wyolum Photobooth"
 emailMsg = "Here's your picture from the http://wyolum.com photobooth!"
 logopng = "logo.png"
 photoCaption="postcard from the xxxx event"
-albumID='5991903863088919889'
+albumID='5991903863088919889' ### Put your own album ID here.
 
 
 n_count = 5 ## how many seconds to count down before a photo is taken
