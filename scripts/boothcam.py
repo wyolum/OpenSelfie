@@ -80,7 +80,12 @@ def countdown(camera, can, n_count):
     can.update()
     camera.stop_preview()
 
-def snap(can, n_count):
+def setLights(r, g, b):
+    ser = findser()
+    rgb_command = 'c%s%s%s' % (chr(r), chr(g), chr(b))
+    ser.write(rgb_command)
+
+def snap(can, n_count, effect='None'):
     global image_idx
 
     try:
@@ -92,10 +97,42 @@ def snap(can, n_count):
             call(command)
         camera = picamera.PiCamera()
         countdown(camera, can, n_count)
-        camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
+        if effect == 'None':
+            camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
+            snapshot = Image.open(custom.RAW_FILENAME)
+        elif effect == 'Warhol':
+            setLights(255, 0, 0)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
+            setLights(0, 255, 0)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
+            setLights(0, 0, 255)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
+            setLights(255, 255, 0)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
+
+            snapshot = Image.new('RGBA', (1366, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((683, 384)), (  0,   0,  683, 384))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((683, 384)), (683,   0, 1366, 384))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, 384,  683, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (683, 384, 1366, 768))
+        elif effect == "Four":
+            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
+            countdown(camera, can, 2)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
+            countdown(camera, can, 2)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
+            countdown(camera, can, 2)
+            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
+
+            snapshot = Image.new('RGBA', (1366, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((683, 384)), (  0,   0,  683, 384))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((683, 384)), (683,   0, 1366, 384))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, 384,  683, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (683, 384, 1366, 768))
+            
         camera.close()
+            
     
-        snapshot = Image.open(custom.RAW_FILENAME)
         if logo is not None:
             # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
             snapshot.paste(logo,(SCREEN_W/2 - logo.size[0]/2,SCREEN_H -lysize ),logo)
@@ -115,10 +152,14 @@ if custom.ARCHIVE:
         os.mkdir(custom.archive_dir)
     image_idx = len(glob.glob(os.path.join(custom.archive_dir, '%s_*.%s' % (custom.PROC_FILENAME[:-4], custom.EXT))))
 
+SERIAL = None
 def findser():
-    ser = serial.Serial('/dev/ttyS0',19200, timeout=.1)
-    print 'using AlaMode'
-    return ser
+    global SERIAL
+    if SERIAL is None: ## singleton
+        SERIAL = serial.Serial('/dev/ttyS0',19200, timeout=.1)
+        print 'using AlaMode'
+    return SERIAL
+
 
 def googleUpload(filen):
     #upload to picasa album

@@ -13,6 +13,7 @@ from mailfile import *
 import custom
 import Image
 import config
+from constants import *
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
@@ -111,7 +112,8 @@ def check_and_snap(force=False, n_count=N_COUNT):
         
         if timelapse_due():
             n_count = 0
-        im = snap(can, n_count=n_count)
+        im = snap(can, n_count=n_count, effect=effect_var.get())
+        setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
             last_snap = time.time()
             display_image(im)
@@ -172,9 +174,7 @@ def sendPic(*args):
     else:
         print 'Not signed in'
 
-## find the serial port for the alamode
 ser = findser()
-
 
 def delay_timelapse(*args):
     '''
@@ -194,8 +194,7 @@ b_var = IntVar()
 
 ## send RGB changes to alamode
 def on_rgb_change(*args):
-    rgb_command = 'c%s%s%s' % (chr(r_var.get()), chr(g_var.get()), chr(b_var.get()))
-    ser.write(rgb_command)
+    setLights(r_var.get(), g_var.get(), b_var.get())
 
 ## call on_rgb_change when any of the sliders move
 r_var.trace('w', on_rgb_change)
@@ -233,6 +232,16 @@ def labeled_slider(parent, label, from_, to, side, variable):
 
 ## add a software button in case hardware button is not available
 interface_frame = Frame(root)
+
+effect_var = StringVar()
+effect_var.set("0") # initialize
+
+for effect in EFFECTS:
+    b = Radiobutton(interface_frame, text=effect,
+                    variable=effect_var, value=effect)
+    b.pack(anchor=W)
+effect_var.set('None')
+
 rgb_frame = Frame(interface_frame)
 r_slider = labeled_slider(rgb_frame, 'R', from_=0, to=255, side=LEFT, variable=r_var)
 g_slider = labeled_slider(rgb_frame, 'G', from_=0, to=255, side=LEFT, variable=g_var)
