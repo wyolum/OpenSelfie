@@ -12,7 +12,7 @@ import serial
 import config
 import custom
 
-if os.path.exists(custom.logopng):
+if custom.logopng and os.path.exists(custom.logopng):
     logo = Image.open(custom.logopng)
     lxsize, lysize = logo.size
 else:
@@ -100,7 +100,9 @@ def snap(can, n_count, effect='None'):
         if effect == 'None':
             camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
             snapshot = Image.open(custom.RAW_FILENAME)
-        elif effect == 'Warhol':
+        elif effect == 'Warhol': 
+            #  set light to R, take photo, G, take photo, B, take photo, Y, take photo
+            # merge results into one image
             setLights(255, 0, 0)
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
             setLights(0, 255, 0)
@@ -116,6 +118,7 @@ def snap(can, n_count, effect='None'):
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, 384,  683, 768))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (683, 384, 1366, 768))
         elif effect == "Four":
+            # take 4 photos and merge into one image.
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
             countdown(camera, can, 2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
