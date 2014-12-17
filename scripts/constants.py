@@ -1,0 +1,1 @@
+EFFECTS = ["None", "Warhol", "Four"]

@@ -103,13 +103,13 @@ def snap(can, n_count, effect='None'):
         elif effect == 'Warhol': 
             #  set light to R, take photo, G, take photo, B, take photo, Y, take photo
             # merge results into one image
-            setLights(255, 0, 0)
+            setLights(255, 0, 0) ## RED
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
-            setLights(0, 255, 0)
+            setLights(0, 255, 0) ## GREEN
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
-            setLights(0, 0, 255)
+            setLights(0, 0, 255) ## BLUE
             camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
-            setLights(255, 255, 0)
+            setLights(180, 180, 0) ## yellow of same intensity
             camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
 
             snapshot = Image.new('RGBA', (1366, 768))
@@ -120,11 +120,11 @@ def snap(can, n_count, effect='None'):
         elif effect == "Four":
             # take 4 photos and merge into one image.
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, 2)
+            countdown(camera, can, custom.m_count)
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, 2)
+            countdown(camera, can, custom.m_count)
             camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, 2)
+            countdown(camera, can, custom.m_count)
             camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
 
             snapshot = Image.new('RGBA', (1366, 768))
