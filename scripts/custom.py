@@ -4,8 +4,10 @@ emailMsg = "Here's your picture from the http://wyolum.com photobooth!"
 logopng = "logo.png"
 #logopng = None
 photoCaption="postcard from the xxxx event"
-albumID='6066338417811409889' ### Put your own album ID here.
+# albumID='6066338417811409889' ### Kevin
+# albumID='5991903863088919889' ### WyoLum
 
+albumID=None ### Put your own album ID here in single quotes like '5991903863088919889'
 
 n_count = 5 ## how many seconds to count down before a photo is taken
 m_count = 3 ## how many seconds to count for subsequent photos (like quad)

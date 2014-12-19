@@ -168,3 +168,4 @@ def googleUpload(filen):
     #upload to picasa album
     album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, custom.albumID)
     photo = client.InsertPhotoSimple(album_url,'NoVa Snap',custom.photoCaption, filen ,content_type='image/jpeg')
+        

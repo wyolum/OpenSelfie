@@ -8,6 +8,7 @@ WyoLum.com
 ## imports
 import time
 from Tkinter import *
+import tkMessageBox
 import ImageTk
 from mailfile import *
 import custom
@@ -86,7 +87,7 @@ def check_and_snap(force=False, n_count=N_COUNT):
     force -- take a snapshot regarless of button status
     n_count -- starting value for countdown timer
     '''
-    global  image_tk, Button_enabled, last_snap
+    global  image_tk, Button_enabled, last_snap, signed_in
 
     if signed_in:
         send_button.config(state=NORMAL)
@@ -121,7 +122,11 @@ def check_and_snap(force=False, n_count=N_COUNT):
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
             if signed_in:
-                googleUpload(custom.PROC_FILENAME)
+                try:
+                    googleUpload(custom.PROC_FILENAME)
+                except Exception, e:
+                    tkMessageBox.showinfo("Upload Error", str(e))
+                    signed_in = False
             can.delete("text")
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
