@@ -147,7 +147,7 @@ def snap(can, n_count, effect='None'):
 snap.active = False
 
 if custom.ARCHIVE:
-    custom.archive_dir = tkFileDialog.askdirectory(message="Choose archive directory.", initialdir='/media/')
+    custom.archive_dir = tkFileDialog.askdirectory(title="Choose archive directory.", initialdir='/media/')
     if custom.archive_dir == '':
         print 'Directory not found.  Not archiving'
         custom.ARCHIVE = False
