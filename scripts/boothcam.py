@@ -147,7 +147,7 @@ def snap(can, n_count, effect='None'):
 snap.active = False
 
 if custom.ARCHIVE:
-    custom.archive_dir = tkFileDialog.askdirectory(message="Choose archive directory.", initialdir='/media/')
+    custom.archive_dir = tkFileDialog.askdirectory(title="Choose archive directory.", initialdir='/media/')
     if custom.archive_dir == '':
         print 'Directory not found.  Not archiving'
         custom.ARCHIVE = False
@@ -168,3 +168,4 @@ def googleUpload(filen):
     #upload to picasa album
     album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, custom.albumID)
     photo = client.InsertPhotoSimple(album_url,'NoVa Snap',custom.photoCaption, filen ,content_type='image/jpeg')
+        
