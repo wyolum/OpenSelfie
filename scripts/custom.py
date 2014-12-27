@@ -6,6 +6,13 @@ import ImageTk
 emailSubject = "Your Postcard from the Wyolum Photobooth"
 emailMsg = "Here's your picture from the http://wyolum.com photobooth!"
 logopng = "logo.png"
+if os.path.exists(logopng):
+    logo = Image.open(logopng)
+    lxsize, lysize = logo.size
+else:
+    logo = None
+    lxsize = 0
+    lysize = 0
 #logopng = None
 photoCaption="postcard from the xxxx event"
 # albumID='6066338417811409889' ### Kevin
@@ -24,7 +31,7 @@ SIGN_ME_IN = True
 #SIGN_ME_IN = False; print 'DBG:: not signing in'
 
 ARCHIVE = True ## archive photos?
-archive_dir = None
+archive_dir = './'
 
 ## usually not need to change these.
 EXT = 'jpg'     
@@ -116,16 +123,30 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
+        global logopng
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
-            photo = Image.open(logopng)
-            ## photo_tk = ImageTk.PhotoImage(file=logopng) ## does not work
-            photo_tk = Tkinter.PhotoImage(file=logopng) ## works on laptop, not on raspberry pi
-            logo_label.config(image=photo_tk)
-            logo_label.photo = photo_tk
+            if False: ## DISPLAY_LOGO (here Kevin)
+                photo = Image.open(logopng)
+                ## photo_tk = ImageTk.PhotoImage(file=logopng) ## does not work
+                photo_tk = Tkinter.PhotoImage(file=logopng) ## works on laptop, not on raspberry pi
+                logo_label.config(image=photo_tk)
+                logo_label.photo = photo_tk
         else:
             entry.config(bg='red')
+
+    def update_and_close(*argss):
+        global logo, lxsize, lysize
+        if os.path.exists(logopng):
+            logo = Image.open(logopng)
+            lxsize, lysize = logo.size
+        else:
+            logo = None
+            lxsize = 0
+            lysize = 0
+        self.destroy()
+        
 
     def logo_dialog():
         options = {}
@@ -155,7 +176,7 @@ def customize(master):
     archive_var = Tkinter.StringVar()
     archive_var.set(archive_dir)
     archive_frame = Tkinter.Frame(self)
-    Tkinter.Label(archive_frame, text='Archive File').pack(side=Tkinter.LEFT)
+    Tkinter.Label(archive_frame, text='Archive Directory').pack(side=Tkinter.LEFT)
     archive_entry = Tkinter.Entry(archive_frame, textvariable=archive_var, width=60)
     archive_entry.pack(side=Tkinter.LEFT)
     archive_var.trace('w', curry(update_archive, archive_entry))
@@ -171,15 +192,18 @@ def customize(master):
     logo_var.trace('w', curry(update_logo, logo_entry))
     Tkinter.Button(logo_frame, text='Browse', command=logo_dialog).pack(side=Tkinter.LEFT)
     logo_frame.pack(side=Tkinter.TOP)
-    Tkinter.Button(self, text='Done', command=self.destroy).pack()
+    Tkinter.Button(self, text='Done', command=update_and_close).pack()
     
-    photo = Image.open(logopng)
-    # photo_tk = ImageTk.PhotoImage(photo) ## does not work
-    photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
-    logo_label = Tkinter.Label(self, image=photo_tk)
-    logo_label.photo = photo
-    logo_label.photo_tk = photo_tk
-    logo_label.pack(side=Tkinter.LEFT)
+
+    if False: # DISPLAY_LOGO: ## here Kevin
+        ### this does not work on rpi
+        photo = Image.open(logopng)
+        # photo_tk = ImageTk.PhotoImage(photo) ## does not work
+        photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+        logo_label = Tkinter.Label(self, image=photo_tk)
+        logo_label.photo = photo
+        logo_label.photo_tk = photo_tk
+        logo_label.pack(side=Tkinter.LEFT)
 
 if __name__ == '__main__':
     import Tkinter
@@ -188,7 +212,16 @@ if __name__ == '__main__':
     b.pack()
     r.mainloop()
     print emailSubject
+    print emailMsg
+    print photoCaption
     print n_count
+    print m_count
+    print TIMELAPSE
+    print ARCHIVE
+    print archive_dir
+    print logopng
+    
+
 
 
     

@@ -30,7 +30,7 @@ HEIGHT = 788
 SCALE = 1.25 ### was 2
 
 ## the countdown starting value
-N_COUNT = custom.n_count
+# N_COUNT = custom.n_count ### use custom.n_count reference directly
 
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
@@ -80,7 +80,7 @@ def timelapse_due():
         out = False
     return out
 
-def check_and_snap(force=False, n_count=N_COUNT):
+def check_and_snap(force=False, n_count=None):
     '''
     Check button status and snap a photo if button has been pressed.
 
@@ -88,7 +88,9 @@ def check_and_snap(force=False, n_count=N_COUNT):
     n_count -- starting value for countdown timer
     '''
     global  image_tk, Button_enabled, last_snap, signed_in
-
+    
+    if n_count is None:
+        n_count = custom.n_count
     if signed_in:
         send_button.config(state=NORMAL)
         etext.config(state=NORMAL)
@@ -125,8 +127,8 @@ def check_and_snap(force=False, n_count=N_COUNT):
                 try:
                     googleUpload(custom.PROC_FILENAME)
                 except Exception, e:
-                    tkMessageBox.showinfo("Upload Error", str(e))
-                    signed_in = False
+                    tkMessageBox.showinfo("Upload Error", str(e) + '\nalbumID set?')
+                    # signed_in = False
             can.delete("text")
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
@@ -154,7 +156,9 @@ def on_close(*args, **kw):
     root.quit()
 root.protocol('WM_DELETE_WINDOW', on_close)
 
-def force_snap(n_count=N_COUNT):
+def force_snap(n_count=None):
+    if n_count is None:
+        n_count = custom.n_count
     check_and_snap(force=True, n_count=n_count)
 
 #if they enter an email address send photo. add error checking
@@ -214,6 +218,7 @@ root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
 # Button(frame, text="Exit", command=on_close).pack(side=LEFT)
+Button(frame, text="Customize", command=lambda *args: custom.customize(root)).pack(side=LEFT)
 send_button = Button(frame, text="SendEmail", command=sendPic, font=custom.BUTTON_FONT)
 send_button.pack(side=RIGHT)
 
@@ -280,6 +285,6 @@ force_snap(n_count=0)
 root.after(200, check_and_snap)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
-etext.bind("<Enter>", sendPic)
+# etext.bind("<Enter>", sendPic)
 on_rgb_change()
 root.mainloop()

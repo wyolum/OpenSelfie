@@ -12,15 +12,6 @@ import serial
 import config
 import custom
 
-if custom.logopng and os.path.exists(custom.logopng):
-    logo = Image.open(custom.logopng)
-    lxsize, lysize = logo.size
-else:
-    logo = None
-    lxsize = 0
-    lysize = 0
-
-    
 SCREEN_W = 1366
 SCREEN_H = 768 
 WHITE = (255, 255, 255)
@@ -89,7 +80,7 @@ def snap(can, n_count, effect='None'):
     global image_idx
 
     try:
-        if custom.ARCHIVE and os.path.exists(custom.PROC_FILENAME):
+        if custom.ARCHIVE and os.path.exists(custom.archive_dir) and os.path.exists(custom.PROC_FILENAME):
             ### copy image to archive
             image_idx += 1
             new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
@@ -136,9 +127,9 @@ def snap(can, n_count, effect='None'):
         camera.close()
             
     
-        if logo is not None:
+        if custom.logo is not None:
             # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
-            snapshot.paste(logo,(SCREEN_W/2 - logo.size[0]/2,SCREEN_H -lysize ),logo)
+            snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,SCREEN_H -custom.lysize ),custom.logo)
         snapshot.save(custom.PROC_FILENAME)
     except Exception, e:
         print e
@@ -146,12 +137,13 @@ def snap(can, n_count, effect='None'):
     return snapshot
 snap.active = False
 
-if custom.ARCHIVE:
-    custom.archive_dir = tkFileDialog.askdirectory(title="Choose archive directory.", initialdir='/media/')
-    if custom.archive_dir == '':
+
+if custom.ARCHIVE: ### commented out... use custom.customizer instead
+    # custom.archive_dir = tkFileDialog.askdirectory(title="Choose archive directory.", initialdir='/media/')
+    if not os.path.exists(custom.archive_dir):
         print 'Directory not found.  Not archiving'
         custom.ARCHIVE = False
-    elif not os.path.exists(custom.archive_dir):
+    elif not os.path.exists(custom.archive_dir): ## not used
         os.mkdir(custom.archive_dir)
     image_idx = len(glob.glob(os.path.join(custom.archive_dir, '%s_*.%s' % (custom.PROC_FILENAME[:-4], custom.EXT))))
 
