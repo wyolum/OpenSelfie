@@ -116,9 +116,11 @@ def customize(master):
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
-            photo = Tkinter.PhotoImage(file=logopng)
+            photo = Image.open(logopng)
+            photo_tk = Tkinter.PhotoImage(photo)
             logo_label.config(image=photo)
             logo_label.photo = photo
+            logo_label.photo_tk = photo_tk
         else:
             entry.config(bg='red')
 
