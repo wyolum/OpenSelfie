@@ -1,5 +1,6 @@
 import os.path
 import Image
+import ImageTk
 
 #customize this file for each event
 emailSubject = "Your Postcard from the Wyolum Photobooth"
@@ -119,10 +120,10 @@ def customize(master):
             entry.config(bg='white')
             logopng = logo_var.get()
             photo = Image.open(logopng)
-            photo_tk = Tkinter.PhotoImage(photo)
-            logo_label.config(image=photo)
-            logo_label.photo = photo
-            logo_label.photo_tk = photo_tk
+            ## photo_tk = ImageTk.PhotoImage(file=logopng) ## does not work
+            photo_tk = Tkinter.PhotoImage(file=logopng) ## works on laptop, not on raspberry pi
+            logo_label.config(image=photo_tk)
+            logo_label.photo = photo_tk
         else:
             entry.config(bg='red')
 
@@ -173,12 +174,12 @@ def customize(master):
     Tkinter.Button(self, text='Done', command=self.destroy).pack()
     
     photo = Image.open(logopng)
-    photo_tk = Tkinter.PhotoImage(photo)
-    logo_label = Tkinter.Label(self, image=photo)
+    # photo_tk = ImageTk.PhotoImage(photo) ## does not work
+    photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+    logo_label = Tkinter.Label(self, image=photo_tk)
     logo_label.photo = photo
     logo_label.photo_tk = photo_tk
     logo_label.pack(side=Tkinter.LEFT)
-
 
 if __name__ == '__main__':
     import Tkinter
