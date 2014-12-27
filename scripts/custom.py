@@ -1,4 +1,6 @@
 import os.path
+import Image
+
 #customize this file for each event
 emailSubject = "Your Postcard from the Wyolum Photobooth"
 emailMsg = "Here's your picture from the http://wyolum.com photobooth!"
@@ -169,10 +171,12 @@ def customize(master):
     Tkinter.Button(logo_frame, text='Browse', command=logo_dialog).pack(side=Tkinter.LEFT)
     logo_frame.pack(side=Tkinter.TOP)
     Tkinter.Button(self, text='Done', command=self.destroy).pack()
-
-    photo = Tkinter.PhotoImage(file="logo.png")
+    
+    photo = Image.open(logopng)
+    photo_tk = Tkinter.PhotoImage(photo)
     logo_label = Tkinter.Label(self, image=photo)
     logo_label.photo = photo
+    logo_label.photo_tk = photo_tk
     logo_label.pack(side=Tkinter.LEFT)
 
 
