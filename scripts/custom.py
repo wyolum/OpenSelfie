@@ -192,9 +192,11 @@ def customize(master):
     logo_var.trace('w', curry(update_logo, logo_entry))
     Tkinter.Button(logo_frame, text='Browse', command=logo_dialog).pack(side=Tkinter.LEFT)
     logo_frame.pack(side=Tkinter.TOP)
-    Tkinter.Button(self, text='Done', command=update_and_close).pack()
+    buttonbox = Tkinter.Frame(self)
+    ##  Tkinter.Button(buttonbox, text='Cancel', command=self.destroy).pack(side=Tkinter.LEFT) changes are stored when they are made. cancel is harder than this
+    Tkinter.Button(buttonbox, text='Done', command=update_and_close).pack(side=Tkinter.LEFT)
+    buttonbox.pack()
     
-
     if False: # DISPLAY_LOGO: ## here Kevin
         ### this does not work on rpi
         photo = Image.open(logopng)
