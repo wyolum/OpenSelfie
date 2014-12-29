@@ -4,11 +4,30 @@ import Image
 import ImageTk
 import ConfigParser
 
-if not os.path.exists('openselfie.conf'):
-    raise ValueError('Configuration file "openselfie.conf" is missing.')
-
 def restore_conf():
-    global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2, TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
+    global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
+    global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
+
+    if not os.path.exists('openselfie.conf'):
+        conf_file = open('openselfie.conf', 'w')
+        default_conf = '''[main]
+emailsubject = Your Postcard from the Wyolum Photobooth
+emailmsg = Here's your picture from the http://wyolum.com photobooth!
+photocaption = postcard from the xxx event
+logopng = logo.png
+albumid = None
+countdown1 = 5
+countdown2 = 3
+timelapse = 0
+sign_me_in = True
+archive = True
+archive_dir = ./
+'''
+        conf_file.write(default_conf)
+        conf_file.close()
+    if not os.path.exists('openselfie.conf'):
+        raise ValueError('Configuration file "openselfie.conf" is missing.')
+
     conf = ConfigParser.ConfigParser()
     conf.read('openselfie.conf')
 
