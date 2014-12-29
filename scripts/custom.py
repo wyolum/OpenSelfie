@@ -1,3 +1,4 @@
+import tkSimpleDialog
 import os.path
 import Image
 import ImageTk
@@ -6,35 +7,38 @@ import ConfigParser
 if not os.path.exists('openselfie.conf'):
     raise ValueError('Configuration file "openselfie.conf" is missing.')
 
-conf = ConfigParser.ConfigParser()
-conf.read('openselfie.conf')
+def restore_conf():
+    global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2, TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir
+    conf = ConfigParser.ConfigParser()
+    conf.read('openselfie.conf')
 
-emailSubject = conf.get('main', 'emailSubject') # "Your Postcard from the Wyolum Photobooth"
-emailMsg = conf.get('main', 'emailMsg') # "Here's your picture from the http://wyolum.com photobooth!"
-logopng = conf.get('main', 'logopng') # "logo.png"
+    emailSubject = conf.get('main', 'emailSubject') # "Your Postcard from the Wyolum Photobooth"
+    emailMsg = conf.get('main', 'emailMsg') # "Here's your picture from the http://wyolum.com photobooth!"
+    logopng = conf.get('main', 'logopng') # "logo.png"
 
-if os.path.exists(logopng):
-    logo = Image.open(logopng)
-    lxsize, lysize = logo.size
-else:
-    logo = None
-    lxsize = 0
-    lysize = 0
+    if os.path.exists(logopng):
+        logo = Image.open(logopng)
+        lxsize, lysize = logo.size
+    else:
+        logo = None
+        lxsize = 0
+        lysize = 0
 
-photoCaption = conf.get('main', 'photoCaption') # "postcard from the xxxx event"
-# albumID='6066338417811409889' ### Kevin
-# albumID='5991903863088919889' ### WyoLum
-albumID = conf.get('main', 'albumID') # None ### Put your own album ID here in single quotes like '5991903863088919889'
- 
-countdown1 = int(conf.get('main', 'countdown1')) # 5 ## how many seconds to count down before a photo is taken
-countdown2 = int(conf.get('main', 'countdown2')) # 3 ## how many seconds to count down before subsequent photos are taken
+    photoCaption = conf.get('main', 'photoCaption') # "postcard from the xxxx event"
+    # albumID='6066338417811409889' ### Kevin
+    # albumID='5991903863088919889' ### WyoLum
+    albumID = conf.get('main', 'albumID') # None ### Put your own album ID here in single quotes like '5991903863088919889'
 
-TIMELAPSE = int(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
-SIGN_ME_IN = bool(conf.get('main', 'SIGN_ME_IN')) # True
+    countdown1 = int(conf.get('main', 'countdown1')) # 5 ## how many seconds to count down before a photo is taken
+    countdown2 = int(conf.get('main', 'countdown2')) # 3 ## how many seconds to count down before subsequent photos are taken
 
-ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
-archive_dir = conf.get('main', 'archive_dir') # './'
+    TIMELAPSE = int(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
+    SIGN_ME_IN = bool(conf.get('main', 'SIGN_ME_IN')) # True
 
+    ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
+    archive_dir = conf.get('main', 'archive_dir') # './'
+
+restore_conf()
 
 ### set up GUI
 BUTTON_FONT = ('Times', 24)
@@ -45,6 +49,9 @@ EXT = 'jpg'
 RAW_FILENAME = 'image.' + EXT
 PROC_FILENAME = 'photo.' + EXT
 
+class AskBoolean(tkSimpleDialog.Dialog):
+    def apply(self):
+        self.result = True
 
 class curry:
     def __init__(self, callable, *args):
@@ -105,10 +112,10 @@ def customize(master):
             pass
 
     def update_countdown2(var, wid):
-        global countdown1
+        global countdown2
         try:
             wid.config(bg='white')
-            countdown1 = int(var.get())
+            countdown2 = int(var.get())
         except:
             wid.config(bg='red')
             pass
@@ -152,22 +159,28 @@ def customize(master):
             logo = None
             lxsize = 0
             lysize = 0
-        conf = ConfigParser.ConfigParser()
-        conf.add_section('main')
-        conf.set('main', 'emailSubject', emailSubject)
-        conf.set('main', 'emailMsg', emailMsg)
-        conf.set('main', 'photoCaption', photoCaption)
-        conf.set('main', 'logopng', logopng)
-        conf.set('main', 'albumID', albumID)
-        conf.set('main', 'countdown1', countdown1)
-        conf.set('main', 'countdown2', countdown2)
-        conf.set('main', 'TIMELAPSE', TIMELAPSE)
-        conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
-        conf.set('main', 'ARCHIVE', ARCHIVE)
-        conf.set('main', 'archive_dir', archive_dir)
-        f = open('openselfie.conf', 'w')
-        conf.write(f)
-        print 'wrote', f.name
+
+        ## save popup dialog
+        save_dialog = AskBoolean(self, title='Save configuration?')
+        if save_dialog.result:
+            conf = ConfigParser.ConfigParser()
+            conf.add_section('main')
+            conf.set('main', 'emailSubject', emailSubject)
+            conf.set('main', 'emailMsg', emailMsg)
+            conf.set('main', 'photoCaption', photoCaption)
+            conf.set('main', 'logopng', logopng)
+            conf.set('main', 'albumID', albumID)
+            conf.set('main', 'countdown1', countdown1)
+            conf.set('main', 'countdown2', countdown2)
+            conf.set('main', 'TIMELAPSE', TIMELAPSE)
+            conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
+            conf.set('main', 'ARCHIVE', ARCHIVE)
+            conf.set('main', 'archive_dir', archive_dir)
+            f = open('openselfie.conf', 'w')
+            conf.write(f)
+            print 'wrote', f.name
+        else:
+            restore_conf()
         self.destroy()
         
 
