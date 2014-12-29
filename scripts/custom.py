@@ -8,7 +8,7 @@ if not os.path.exists('openselfie.conf'):
     raise ValueError('Configuration file "openselfie.conf" is missing.')
 
 def restore_conf():
-    global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2, TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir
+    global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2, TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
     conf = ConfigParser.ConfigParser()
     conf.read('openselfie.conf')
 
