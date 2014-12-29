@@ -42,7 +42,7 @@ def setup_google():
         out = False
     return out
 
-def countdown(camera, can, n_count):
+def countdown(camera, can, countdown1):
     camera.start_preview()
     can.delete("image")
     led_state = False
@@ -53,12 +53,12 @@ def countdown(camera, can, n_count):
 
     can.delete("all")
 
-    for i in range(n_count):
+    for i in range(countdown1):
         can.delete("text")
         can.update()
-        can.create_text(SCREEN_W/2 - 50, 300, text=str(n_count - i), font=font, tags="text")
+        can.create_text(SCREEN_W/2 - 50, 300, text=str(countdown1 - i), font=font, tags="text")
         can.update()
-        if i < n_count - 2:
+        if i < countdown1 - 2:
             time.sleep(1)
             led_state = not led_state
             safe_set_led(camera, led_state)
@@ -76,7 +76,7 @@ def setLights(r, g, b):
     rgb_command = 'c%s%s%s' % (chr(r), chr(g), chr(b))
     ser.write(rgb_command)
 
-def snap(can, n_count, effect='None'):
+def snap(can, countdown1, effect='None'):
     global image_idx
 
     try:
@@ -87,7 +87,7 @@ def snap(can, n_count, effect='None'):
             command = (['cp', custom.PROC_FILENAME, new_filename])
             call(command)
         camera = picamera.PiCamera()
-        countdown(camera, can, n_count)
+        countdown(camera, can, countdown1)
         if effect == 'None':
             camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
             snapshot = Image.open(custom.RAW_FILENAME)
@@ -111,11 +111,11 @@ def snap(can, n_count, effect='None'):
         elif effect == "Four":
             # take 4 photos and merge into one image.
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, custom.m_count)
+            countdown(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, custom.m_count)
+            countdown(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
-            countdown(camera, can, custom.m_count)
+            countdown(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
 
             snapshot = Image.new('RGBA', (1366, 768))

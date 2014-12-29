@@ -1,11 +1,18 @@
 import os.path
 import Image
 import ImageTk
+import ConfigParser
 
-#customize this file for each event
-emailSubject = "Your Postcard from the Wyolum Photobooth"
-emailMsg = "Here's your picture from the http://wyolum.com photobooth!"
-logopng = "logo.png"
+if not os.path.exists('openselfie.conf'):
+    raise ValueError('Configuration file "openselfie.conf" is missing.')
+
+conf = ConfigParser.ConfigParser()
+conf.read('openselfie.conf')
+
+emailSubject = conf.get('main', 'emailSubject') # "Your Postcard from the Wyolum Photobooth"
+emailMsg = conf.get('main', 'emailMsg') # "Here's your picture from the http://wyolum.com photobooth!"
+logopng = conf.get('main', 'logopng') # "logo.png"
+
 if os.path.exists(logopng):
     logo = Image.open(logopng)
     lxsize, lysize = logo.size
@@ -13,25 +20,25 @@ else:
     logo = None
     lxsize = 0
     lysize = 0
-#logopng = None
-photoCaption="postcard from the xxxx event"
+
+photoCaption = conf.get('main', 'photoCaption') # "postcard from the xxxx event"
 # albumID='6066338417811409889' ### Kevin
 # albumID='5991903863088919889' ### WyoLum
-albumID=None ### Put your own album ID here in single quotes like '5991903863088919889'
+albumID = conf.get('main', 'albumID') # None ### Put your own album ID here in single quotes like '5991903863088919889'
+ 
+countdown1 = int(conf.get('main', 'countdown1')) # 5 ## how many seconds to count down before a photo is taken
+countdown2 = int(conf.get('main', 'countdown2')) # 3 ## how many seconds to count down before subsequent photos are taken
 
-n_count = 5 ## how many seconds to count down before a photo is taken
-m_count = 3 ## how many seconds to count for subsequent photos (like quad)
+TIMELAPSE = int(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
+SIGN_ME_IN = bool(conf.get('main', 'SIGN_ME_IN')) # True
 
-TIMELAPSE = 0 ## use 0 for no time lapse photos, at least 3 (seconds)
+ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
+archive_dir = conf.get('main', 'archive_dir') # './'
+
+
 ### set up GUI
 BUTTON_FONT = ('Times', 24)
 CANVAS_FONT = ("times", 50)
-
-SIGN_ME_IN = True
-#SIGN_ME_IN = False; print 'DBG:: not signing in'
-
-ARCHIVE = True ## archive photos?
-archive_dir = './'
 
 ## usually not need to change these.
 EXT = 'jpg'     
@@ -88,20 +95,20 @@ def customize(master):
         global albumID
         albumID = var.get()
         
-    def update_n_count(var, wid):
-        global n_count
+    def update_countdown1(var, wid):
+        global countdown1
         try:
             wid.config(bg='white')
-            n_count = int(var.get())
+            countdown1 = int(var.get())
         except:
             wid.config(bg='red')
             pass
 
-    def update_m_count(var, wid):
-        global n_count
+    def update_countdown2(var, wid):
+        global countdown1
         try:
             wid.config(bg='white')
-            n_count = int(var.get())
+            countdown1 = int(var.get())
         except:
             wid.config(bg='red')
             pass
@@ -145,6 +152,22 @@ def customize(master):
             logo = None
             lxsize = 0
             lysize = 0
+        conf = ConfigParser.ConfigParser()
+        conf.add_section('main')
+        conf.set('main', 'emailSubject', emailSubject)
+        conf.set('main', 'emailMsg', emailMsg)
+        conf.set('main', 'photoCaption', photoCaption)
+        conf.set('main', 'logopng', logopng)
+        conf.set('main', 'albumID', albumID)
+        conf.set('main', 'countdown1', countdown1)
+        conf.set('main', 'countdown2', countdown2)
+        conf.set('main', 'TIMELAPSE', TIMELAPSE)
+        conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
+        conf.set('main', 'ARCHIVE', ARCHIVE)
+        conf.set('main', 'archive_dir', archive_dir)
+        f = open('openselfie.conf', 'w')
+        conf.write(f)
+        print 'wrote', f.name
         self.destroy()
         
 
@@ -169,8 +192,8 @@ def customize(master):
     string_customizer('Email Msg', emailMsg, update_msg)
     string_customizer('Caption', photoCaption, update_caption)
     string_customizer('albumID', albumID, update_albumID)
-    string_customizer('Countdown1', n_count, update_n_count)
-    string_customizer('Countdown2', m_count, update_m_count)
+    string_customizer('Countdown1', countdown1, update_countdown1)
+    string_customizer('Countdown2', countdown2, update_countdown2)
     string_customizer('Timelapse', TIMELAPSE, update_timelapse)
 
     archive_var = Tkinter.StringVar()
@@ -216,8 +239,8 @@ if __name__ == '__main__':
     print emailSubject
     print emailMsg
     print photoCaption
-    print n_count
-    print m_count
+    print countdown1
+    print countdown2
     print TIMELAPSE
     print ARCHIVE
     print archive_dir

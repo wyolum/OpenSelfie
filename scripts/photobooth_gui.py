@@ -30,7 +30,7 @@ HEIGHT = 788
 SCALE = 1.25 ### was 2
 
 ## the countdown starting value
-# N_COUNT = custom.n_count ### use custom.n_count reference directly
+# COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
 
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
@@ -80,17 +80,17 @@ def timelapse_due():
         out = False
     return out
 
-def check_and_snap(force=False, n_count=None):
+def check_and_snap(force=False, countdown1=None):
     '''
     Check button status and snap a photo if button has been pressed.
 
     force -- take a snapshot regarless of button status
-    n_count -- starting value for countdown timer
+    countdown1 -- starting value for countdown timer
     '''
     global  image_tk, Button_enabled, last_snap, signed_in
     
-    if n_count is None:
-        n_count = custom.n_count
+    if countdown1 is None:
+        countdown1 = custom.countdown1
     if signed_in:
         send_button.config(state=NORMAL)
         etext.config(state=NORMAL)
@@ -114,8 +114,8 @@ def check_and_snap(force=False, n_count=None):
         can.update()
         
         if timelapse_due():
-            n_count = 0
-        im = snap(can, n_count=n_count, effect=effect_var.get())
+            countdown1 = 0
+        im = snap(can, countdown1=countdown1, effect=effect_var.get())
         setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
             last_snap = time.time()
@@ -156,10 +156,10 @@ def on_close(*args, **kw):
     root.quit()
 root.protocol('WM_DELETE_WINDOW', on_close)
 
-def force_snap(n_count=None):
-    if n_count is None:
-        n_count = custom.n_count
-    check_and_snap(force=True, n_count=n_count)
+def force_snap(countdown1=None):
+    if countdown1 is None:
+        countdown1 = custom.countdown1
+    check_and_snap(force=True, countdown1=countdown1)
 
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
@@ -279,7 +279,7 @@ if not signed_in:
 can.delete("text")
 can.create_text(WIDTH/2, HEIGHT/2, text="SMILE ;-)", font=custom.CANVAS_FONT, tags="splash")
 can.update()
-force_snap(n_count=0)
+force_snap(countdown1=0)
 
 ### check button after waiting for 200 ms
 root.after(200, check_and_snap)
