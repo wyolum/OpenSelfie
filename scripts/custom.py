@@ -168,6 +168,7 @@ def customize(master):
                 logo_label.photo = photo_tk
         else:
             entry.config(bg='red')
+            logopng = 'None'
 
     def update_and_close(*argss):
         global logo, lxsize, lysize
