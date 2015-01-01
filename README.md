@@ -1,4 +1,8 @@
-NovaBooth
+Open Selfie
 =========
 
-New (Nova is also Northern Virginia) Photobooth for the NoVa maker faire
+Open Selfie is an Open Source (Hardware and Software) Photobooth based on the Raspberry Pi and Wyolum's AlaMode.
+
+scripts -- photobooth software (python)
+fabricate -- laser cut files
+arduino -- arduino software for the AlaMode (reads button, flashes lights.
