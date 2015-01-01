@@ -21,7 +21,7 @@ countdown2 = 3
 timelapse = 0
 sign_me_in = True
 archive = True
-archive_dir = ./
+archive_dir = ../Photos/
 '''
         conf_file.write(default_conf)
         conf_file.close()
