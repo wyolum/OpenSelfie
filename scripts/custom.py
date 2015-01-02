@@ -3,13 +3,17 @@ import os.path
 import Image
 import ImageTk
 import ConfigParser
+import os.path
+
+install_dir = os.path.split(os.path.abspath(__file__))[0]
+conf_filename = os.path.join(install_dir, 'openselfie.conf')
 
 def restore_conf():
     global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
     global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
 
     if not os.path.exists('openselfie.conf'):
-        conf_file = open('openselfie.conf', 'w')
+        conf_file = open(conf_filename, 'w')
         default_conf = '''[main]
 emailsubject = Your Postcard from the Wyolum Photobooth
 emailmsg = Here's your picture from the http://wyolum.com photobooth!
@@ -22,8 +26,8 @@ countdown2 = 3
 timelapse = 0
 sign_me_in = True
 archive = True
-archive_dir = ../Photos/
-'''
+archive_dir = %s/Photos/
+''' % install_dir
         conf_file.write(default_conf)
         conf_file.close()
     if not os.path.exists('openselfie.conf'):
@@ -196,7 +200,7 @@ def customize(master):
             conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
             conf.set('main', 'ARCHIVE', ARCHIVE)
             conf.set('main', 'archive_dir', archive_dir)
-            f = open('openselfie.conf', 'w')
+            f = open(conf_filename, 'w')
             conf.write(f)
             print 'wrote', f.name
         else:
