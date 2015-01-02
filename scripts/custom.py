@@ -215,6 +215,7 @@ def customize(master):
         options['initialdir'] = './'
         options['initialfile'] = logo_var.get()
         options['title'] = 'Logo finder'
+        options['parent'] = self
         logo_file = tkFileDialog.askopenfilename(**options)
         logo_var.set(logo_file)
 
@@ -222,6 +223,7 @@ def customize(master):
         options = {}
         options['initialdir'] = '/media'
         options['title'] = 'Select Archive Directory'
+        options['parent'] = self
         archive_dir = tkFileDialog.askdirectory(**options)
         archive_var.set(archive_dir)
 
