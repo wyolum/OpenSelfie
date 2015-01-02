@@ -15,6 +15,7 @@ emailsubject = Your Postcard from the Wyolum Photobooth
 emailmsg = Here's your picture from the http://wyolum.com photobooth!
 photocaption = postcard from the xxx event
 logopng = logo.png
+photo_tk = None
 albumid = None
 countdown1 = 5
 countdown2 = 3
@@ -156,14 +157,13 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
-        global logopng
+        global logopng, photo_tk
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
-            if False: ## DISPLAY_LOGO (here Kevin)
+            if True: ## DISPLAY_LOGO 
                 photo = Image.open(logopng)
-                ## photo_tk = ImageTk.PhotoImage(file=logopng) ## does not work
-                photo_tk = Tkinter.PhotoImage(file=logopng) ## works on laptop, not on raspberry pi
+                photo_tk = ImageTk.PhotoImage(photo)
                 logo_label.config(image=photo_tk)
                 logo_label.photo = photo_tk
         else:
@@ -253,11 +253,10 @@ def customize(master):
     Tkinter.Button(buttonbox, text='Done', command=update_and_close).pack(side=Tkinter.LEFT)
     buttonbox.pack()
     
-    if False: # DISPLAY_LOGO: ## here Kevin
-        ### this does not work on rpi
+    if True: # DISPLAY_LOGO:
         photo = Image.open(logopng)
-        # photo_tk = ImageTk.PhotoImage(photo) ## does not work
-        photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+        photo_tk = ImageTk.PhotoImage(photo) ## does not work
+        #photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
         logo_label = Tkinter.Label(self, image=photo_tk)
         logo_label.photo = photo
         logo_label.photo_tk = photo_tk
