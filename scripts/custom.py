@@ -19,7 +19,7 @@ emailsubject = Your Postcard from the Wyolum Photobooth
 emailmsg = Here's your picture from the http://wyolum.com photobooth!
 photocaption = postcard from the xxx event
 logopng = logo.png
-photo_tk = None
+
 albumid = None
 countdown1 = 5
 countdown2 = 3
@@ -161,7 +161,7 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
-        global logopng, photo_tk
+        global logopng
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
