@@ -161,7 +161,7 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
-        global logopng
+        global logopng, photo_tk
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
