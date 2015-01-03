@@ -12,7 +12,7 @@ def restore_conf():
     global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
     global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
 
-    if not os.path.exists('openselfie.conf'):
+    if not os.path.exists(conf_filename):
         conf_file = open(conf_filename, 'w')
         default_conf = '''[main]
 emailsubject = Your Postcard from the Wyolum Photobooth
@@ -30,11 +30,11 @@ archive_dir = %s/Photos/
 ''' % install_dir
         conf_file.write(default_conf)
         conf_file.close()
-    if not os.path.exists('openselfie.conf'):
-        raise ValueError('Configuration file "openselfie.conf" is missing.')
+    if not os.path.exists(conf_filename):
+        raise ValueError('Configuration file "%s" is missing.' % conf_filename)
 
     conf = ConfigParser.ConfigParser()
-    conf.read('openselfie.conf')
+    conf.read(conf_filename)
 
     emailSubject = conf.get('main', 'emailSubject') # "Your Postcard from the Wyolum Photobooth"
     emailMsg = conf.get('main', 'emailMsg') # "Here's your picture from the http://wyolum.com photobooth!"
