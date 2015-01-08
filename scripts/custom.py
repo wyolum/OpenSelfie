@@ -4,6 +4,7 @@ import Image
 import ImageTk
 import ConfigParser
 import os.path
+from constants import SCREEN_W, SCREEN_H
 
 install_dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],  '..'))
 conf_filename = os.path.join(install_dir, 'scripts', 'openselfie.conf')
@@ -86,9 +87,32 @@ class curry:
         return self.callable(*self.args)
 
 def ispi():
-    return os.path.exists('/dev/ttyUSB0')
+    return os.path.exists('/dev/ttyS0')
+
+logo_label = None
+def display_logo(parent, logopng):
+    global logo_label
+    if ispi():
+        photo = Image.open(logopng)
+        width, height = photo.size
+        if SCREEN_W / width < SCREEN_H / height:
+            scale = (.25 * SCREEN_W) / width
+        else:
+            scale = (.25 * SCREEN_H) / height
+        photo = photo.resize((int(width * scale), int(height * scale)))
+        photo_tk = ImageTk.PhotoImage(photo) 
+    else:
+        photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+    try: ## subsequent calls only need config
+        logo_label.config(image=photo_tk)
+        logo_label.photo_tk = photo_tk
+    except: ## initial call creates a new label
+        logo_label = Tkinter.Label(parent, image=photo_tk)
+        logo_label.photo_tk = photo_tk
+        logo_label.pack(side=Tkinter.LEFT)
 
 def customize(master):
+    global logo_label
     import Tkinter
     import tkFileDialog
     self = Tkinter.Toplevel(master)
@@ -164,27 +188,23 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
-        global logopng, photo_tk
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
             if True: ## DISPLAY_LOGO 
-                photo = Image.open(logopng)
-                photo_tk = ImageTk.PhotoImage(photo)
-                logo_label.config(image=photo_tk)
-                logo_label.photo = photo_tk
+                display_logo(self, logopng)
         else:
             entry.config(bg='red')
             logopng = 'None'
 
     def update_and_close(*argss):
-        global logo, lxsize, lysize
+        global logo_label, lxsize, lysize
         if os.path.exists(logopng):
             logo = Image.open(logopng)
             lxsize, lysize = logo.size
         else:
             logo = None
-            lxsize = 0
+            lxsize = 0l
             lysize = 0
 
         ## save popup dialog
@@ -208,6 +228,7 @@ def customize(master):
             print 'wrote', f.name
         else:
             restore_conf()
+        print 'destroy logo_label'
         self.destroy()
         
 
@@ -263,16 +284,7 @@ def customize(master):
     buttonbox.pack()
     
     if True: # DISPLAY_LOGO:
-        if ispi():
-            photo = Image.open(logopng)
-            width, length = photo.size
-            photo_tk = ImageTk.PhotoImage(photo) 
-        else:
-            photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
-        logo_label = Tkinter.Label(self, image=photo_tk)
-        # logo_label.photo = photo
-        logo_label.photo_tk = photo_tk
-        logo_label.pack(side=Tkinter.LEFT)
+        display_logo(self, logopng)
 
 if __name__ == '__main__':
     import Tkinter
