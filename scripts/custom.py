@@ -5,8 +5,8 @@ import ImageTk
 import ConfigParser
 import os.path
 
-install_dir = os.path.split(os.path.abspath(__file__))[0]
-conf_filename = os.path.join(install_dir, 'openselfie.conf')
+install_dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],  '..'))
+conf_filename = os.path.join(install_dir, 'scripts', 'openselfie.conf')
 
 def restore_conf():
     global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
@@ -84,6 +84,9 @@ class curry:
     
     def __call__(self, *args):
         return self.callable(*self.args)
+
+def ispi():
+    return os.path.exists('/dev/ttyUSB0')
 
 def customize(master):
     import Tkinter
@@ -260,11 +263,14 @@ def customize(master):
     buttonbox.pack()
     
     if True: # DISPLAY_LOGO:
-        photo = Image.open(logopng)
-        photo_tk = ImageTk.PhotoImage(photo) ## does not work
-        #photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+        if ispi():
+            photo = Image.open(logopng)
+            width, length = photo.size
+            photo_tk = ImageTk.PhotoImage(photo) 
+        else:
+            photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
         logo_label = Tkinter.Label(self, image=photo_tk)
-        logo_label.photo = photo
+        # logo_label.photo = photo
         logo_label.photo_tk = photo_tk
         logo_label.pack(side=Tkinter.LEFT)
 
