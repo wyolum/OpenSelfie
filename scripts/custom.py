@@ -1,3 +1,5 @@
+import Tkinter
+import tkFileDialog
 import tkSimpleDialog
 import os.path
 import Image
@@ -113,8 +115,6 @@ def display_logo(parent, logopng):
 
 def customize(master):
     global logo_label
-    import Tkinter
-    import tkFileDialog
     self = Tkinter.Toplevel(master)
 
     def string_customizer(label, initial_val, listener):
@@ -228,7 +228,6 @@ def customize(master):
             print 'wrote', f.name
         else:
             restore_conf()
-        print 'destroy logo_label'
         self.destroy()
         
 
