@@ -7,3 +7,5 @@ scripts/*.pyc
 
 # ignore credentials
 scripts/*.cred
+scripts/*.json
+scripts/*.dat
