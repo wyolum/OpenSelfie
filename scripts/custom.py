@@ -1,35 +1,43 @@
+import Tkinter
+import tkFileDialog
 import tkSimpleDialog
 import os.path
 import Image
 import ImageTk
 import ConfigParser
+import os.path
+from constants import SCREEN_W, SCREEN_H
+
+install_dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],  '..'))
+conf_filename = os.path.join(install_dir, 'scripts', 'openselfie.conf')
 
 def restore_conf():
     global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
     global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
 
-    if not os.path.exists('openselfie.conf'):
-        conf_file = open('openselfie.conf', 'w')
+    if not os.path.exists(conf_filename):
+        conf_file = open(conf_filename, 'w')
         default_conf = '''[main]
 emailsubject = Your Postcard from the Wyolum Photobooth
 emailmsg = Here's your picture from the http://wyolum.com photobooth!
 photocaption = postcard from the xxx event
 logopng = logo.png
+
 albumid = None
 countdown1 = 5
 countdown2 = 3
 timelapse = 0
 sign_me_in = True
 archive = True
-archive_dir = ../Photos/
-'''
+archive_dir = %s/Photos/
+''' % install_dir
         conf_file.write(default_conf)
         conf_file.close()
-    if not os.path.exists('openselfie.conf'):
-        raise ValueError('Configuration file "openselfie.conf" is missing.')
+    if not os.path.exists(conf_filename):
+        raise ValueError('Configuration file "%s" is missing.' % conf_filename)
 
     conf = ConfigParser.ConfigParser()
-    conf.read('openselfie.conf')
+    conf.read(conf_filename)
 
     emailSubject = conf.get('main', 'emailSubject') # "Your Postcard from the Wyolum Photobooth"
     emailMsg = conf.get('main', 'emailMsg') # "Here's your picture from the http://wyolum.com photobooth!"
@@ -80,9 +88,33 @@ class curry:
     def __call__(self, *args):
         return self.callable(*self.args)
 
+def ispi():
+    return os.path.exists('/dev/ttyS0')
+
+logo_label = None
+def display_logo(parent, logopng):
+    global logo_label
+    if ispi():
+        photo = Image.open(logopng)
+        width, height = photo.size
+        if SCREEN_W / width < SCREEN_H / height:
+            scale = (.25 * SCREEN_W) / width
+        else:
+            scale = (.25 * SCREEN_H) / height
+        photo = photo.resize((int(width * scale), int(height * scale)))
+        photo_tk = ImageTk.PhotoImage(photo) 
+    else:
+        photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
+    try: ## subsequent calls only need config
+        logo_label.config(image=photo_tk)
+        logo_label.photo_tk = photo_tk
+    except: ## initial call creates a new label
+        logo_label = Tkinter.Label(parent, image=photo_tk)
+        logo_label.photo_tk = photo_tk
+        logo_label.pack(side=Tkinter.LEFT)
+
 def customize(master):
-    import Tkinter
-    import tkFileDialog
+    global logo_label
     self = Tkinter.Toplevel(master)
 
     def string_customizer(label, initial_val, listener):
@@ -156,28 +188,23 @@ def customize(master):
             ARCHIVE = False
         
     def update_logo(entry):
-        global logopng
         if os.path.exists(logo_var.get()):
             entry.config(bg='white')
             logopng = logo_var.get()
-            if False: ## DISPLAY_LOGO (here Kevin)
-                photo = Image.open(logopng)
-                ## photo_tk = ImageTk.PhotoImage(file=logopng) ## does not work
-                photo_tk = Tkinter.PhotoImage(file=logopng) ## works on laptop, not on raspberry pi
-                logo_label.config(image=photo_tk)
-                logo_label.photo = photo_tk
+            if True: ## DISPLAY_LOGO 
+                display_logo(self, logopng)
         else:
             entry.config(bg='red')
             logopng = 'None'
 
     def update_and_close(*argss):
-        global logo, lxsize, lysize
+        global logo_label, lxsize, lysize
         if os.path.exists(logopng):
             logo = Image.open(logopng)
             lxsize, lysize = logo.size
         else:
             logo = None
-            lxsize = 0
+            lxsize = 0l
             lysize = 0
 
         ## save popup dialog
@@ -196,7 +223,7 @@ def customize(master):
             conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
             conf.set('main', 'ARCHIVE', ARCHIVE)
             conf.set('main', 'archive_dir', archive_dir)
-            f = open('openselfie.conf', 'w')
+            f = open(conf_filename, 'w')
             conf.write(f)
             print 'wrote', f.name
         else:
@@ -211,6 +238,7 @@ def customize(master):
         options['initialdir'] = './'
         options['initialfile'] = logo_var.get()
         options['title'] = 'Logo finder'
+        options['parent'] = self
         logo_file = tkFileDialog.askopenfilename(**options)
         logo_var.set(logo_file)
 
@@ -218,6 +246,7 @@ def customize(master):
         options = {}
         options['initialdir'] = '/media'
         options['title'] = 'Select Archive Directory'
+        options['parent'] = self
         archive_dir = tkFileDialog.askdirectory(**options)
         archive_var.set(archive_dir)
 
@@ -253,15 +282,8 @@ def customize(master):
     Tkinter.Button(buttonbox, text='Done', command=update_and_close).pack(side=Tkinter.LEFT)
     buttonbox.pack()
     
-    if False: # DISPLAY_LOGO: ## here Kevin
-        ### this does not work on rpi
-        photo = Image.open(logopng)
-        # photo_tk = ImageTk.PhotoImage(photo) ## does not work
-        photo_tk = Tkinter.PhotoImage(file=logopng) ## works but not on raspberry pi
-        logo_label = Tkinter.Label(self, image=photo_tk)
-        logo_label.photo = photo
-        logo_label.photo_tk = photo_tk
-        logo_label.pack(side=Tkinter.LEFT)
+    if True: # DISPLAY_LOGO:
+        display_logo(self, logopng)
 
 if __name__ == '__main__':
     import Tkinter
