@@ -6,7 +6,15 @@ import os.path
 import time
 import picamera
 from time import sleep
+import gdata
 import gdata.photos.service
+import gdata.media
+import gdata.geo
+import gdata.gauth
+import webbrowser
+from datetime import datetime, timedelta
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.file import Storage
 from PIL import Image
 import serial
 import config
@@ -23,15 +31,45 @@ def safe_set_led(camera, state):
     except:
         pass
 
+def OAuth2Login(client_secrets, credential_store, email):
+    scope='https://picasaweb.google.com/data/'
+    user_agent='picasawebuploader'
+
+    storage = Storage(credential_store)
+    credentials = storage.get()
+    if credentials is None or credentials.invalid:
+        flow = flow_from_clientsecrets(client_secrets, scope=scope, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        uri = flow.step1_get_authorize_url()
+        webbrowser.open(uri)
+        code = raw_input('Enter the authentication code: ').strip()
+        credentials = flow.step2_exchange(code)
+
+    if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):
+        http = httplib2.Http()
+        http = credentials.authorize(http)
+        credentials.refresh(http)
+
+    storage.put(credentials)
+
+    gd_client = gdata.photos.service.PhotosService(source=user_agent,
+                                                   email=email,
+
+                                                   additional_headers={'Authorization' : 'Bearer %s' % credentials.access_token})
+
+    return gd_client
+
 def setup_google():
     global client
 
     out = True
     try:
         # Create a client class which will make HTTP requests with Google Docs server.
-        client = gdata.photos.service.PhotosService()
-        # Authenticate using your Google Docs email address and password.
-        client.ClientLogin(config.username, config.password)
+        configdir = os.path.expanduser('./')
+        client_secrets = os.path.join(configdir, 'OpenSelfie.json')
+        credential_store = os.path.join(configdir, 'credentials.dat')
+
+        client = OAuth2Login(client_secrets, credential_store, config.username)
+
     except KeyboardInterrupt:
         raise
     except:

@@ -52,6 +52,3 @@ if __name__ == '__main__':
     albums = gd_client.GetUserFeed()
     for album in albums.entry:
        print 'title %s id =  %s' %(album.title.text, album.gphoto_id.text)
-    album_id = '6205701409506541633'
-    album_url ='/data/feed/api/user/%s/albumid/%s' % (email, album_id)
-    photo = gd_client.InsertPhotoSimple(album_url,'NoVa Snap','uploaded with oathtest.py','./logo.png' ,content_type='image/jpeg')
